@@ -695,6 +695,7 @@ function render() {
           }
         },
         annotation: {
+          clip: false,
           annotations: {
             sellerZone: {
               type: 'box', drawTime: 'beforeDatasetsDraw',
@@ -704,8 +705,8 @@ function render() {
               label: {
                 display: true, content: "Seller's Market",
                 position: { x: 'end', y: 'start' },
-                color: 'rgba(185,74,44,0.6)', font: { size: 12, family: 'Lato', weight: '400' },
-                padding: 4, backgroundColor: 'transparent'
+                color: 'rgba(185,74,44,0.5)', font: { size: 11, family: 'Lato', weight: '400' },
+                padding: 4, backgroundColor: 'transparent', borderWidth: 0
               }
             },
             sellerLine: {
@@ -721,8 +722,8 @@ function render() {
               label: {
                 display: true, content: 'Balanced Market',
                 position: { x: 'end', y: 'center' },
-                color: 'rgba(180,130,0,0.6)', font: { size: 12, family: 'Lato', weight: '400' },
-                padding: 4, backgroundColor: 'transparent'
+                color: 'rgba(180,130,0,0.5)', font: { size: 11, family: 'Lato', weight: '400' },
+                padding: 4, backgroundColor: 'transparent', borderWidth: 0
               }
             },
             buyerLine: {
@@ -738,13 +739,14 @@ function render() {
               label: {
                 display: true, content: "Buyer's Market",
                 position: { x: 'end', y: 'end' },
-                color: 'rgba(24,95,165,0.6)', font: { size: 12, family: 'Lato', weight: '400' },
-                padding: 4, backgroundColor: 'transparent'
+                color: 'rgba(24,95,165,0.5)', font: { size: 11, family: 'Lato', weight: '400' },
+                padding: 4, backgroundColor: 'transparent', borderWidth: 0
               }
             }
           }
         }
       },
+      layout: { padding: { right: 10 } },
       scales: {
         x: { ticks: { ...TC, autoSkip: true, maxTicksLimit: 14, maxRotation: 45 }, grid: { display: false } },
         y: {
