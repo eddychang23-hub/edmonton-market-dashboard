@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edmonton's Real Estate Market Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --navy: #0e1f3d;
+  --blue: #185FA5;
+  --seller: #b94a2c;
+  --seller-light: #f9ede9;
+  --balanced: #c88a00;
+  --balanced-light: #fdf6e3;
+  --buyer: #1a6e3c;
+  --buyer-light: #e8f5ee;
+  --text: #2d2d2d;
+  --text-mid: #555555;
+  --text-soft: #999999;
+  --border: #e2e8f0;
+  --surface: transparent;
+  --white: #ffffff;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+/* ── Type scale ── */
+:root {
+  --fs-h1: 1.6rem;   --fw-h1: 700;   /* card titles: Market Gauge, chart titles */
+  --fs-h2: 1.15rem;  --fw-h2: 700;   /* section labels: Avg sold price by property type */
+  --fs-h3: .95rem;   --fw-h3: 400;   /* supporting context: Seller's Market, legend names */
+  --fs-value: 2rem;  --fw-value: 700; /* big numbers: 1,111 / 3,934 */
+  --fs-label: .82rem;  --fw-label: 700; /* uppercase labels: HOMES SOLD */
+  --fs-delta: .9rem;   --fw-delta: 400; /* ▲▼ change lines */
+  --fs-body: .95rem;   --fw-body: 400;  /* body / chart sub */
+  --fs-small: .82rem;  --fw-small: 400; /* source note, legend ranges */
+  --ls-label: .07em; /* letter spacing for uppercase labels */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lato', sans-serif; background: transparent; color: var(--text); }
+
+/* ── Header ── */
+.header { background: #0e1f3d; padding: 1.5rem 2rem 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.header-left h1 { font-family: 'Lato', sans-serif; font-size: 1.6rem; color: #fff; font-weight: 400; }
+.header-left p { font-size: var(--fs-body); color: rgba(255,255,255,.5); margin-top: 2px; }
+
+.region-toggle { display: flex; background: rgba(255,255,255,.1); border-radius: 50px; padding: 3px; gap: 2px; }
+.rtb { padding: 7px 18px; border-radius: 50px; border: none; font-family: 'Lato', sans-serif; font-size: var(--fs-body); font-weight: var(--fw-body); cursor: pointer; color: rgba(255,255,255,.6); background: transparent; transition: all .2s; white-space: nowrap; }
+.rtb.active { background: #fff; color: var(--navy); }
+
+/* ── Main ── */
+.main { padding: 1.5rem 1.25rem; margin: 0 auto; }
+
+/* ── Gauge card ── */
+.gauge-card { display: flex; flex-direction: row; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; }
+.gauge-left { flex: 0 0 50%; min-width: 0; padding: 1.25rem 1.75rem; display: flex; flex-direction: column; justify-content: center; gap: .75rem; border-right: 1px solid var(--border); }
+.gauge-card-title { font-size: 1.6rem; font-weight: var(--fw-h1); color: var(--text); }
+.gauge-headline { font-size: calc(var(--fs-h3) * 1.3); font-weight: var(--fw-h3); line-height: 1.2; margin-top: 2px; }
+.gauge-legend { display: flex; flex-direction: column; gap: .45rem; margin-top: 1rem; }
+.gauge-legend-item { display: flex; align-items: center; gap: .6rem; }
+.gauge-legend-swatch { width: 20px; height: 20px; border-radius: 3px; flex-shrink: 0; }
+.gauge-legend-name { font-size: calc(var(--fs-h3) * 1.3); font-weight: var(--fw-h3); color: var(--text); }
+.gauge-legend-range { font-size: calc(var(--fs-small) * 1.3); color: var(--text-soft); margin-top: 1px; }
+.gauge-right { flex: 0 0 50%; background: var(--white); padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-readout { text-align: center; margin-top: 0; }
+.gauge-readout-pct { font-size: calc(var(--fs-h2) * 0.75); font-weight: var(--fw-h2); color: var(--text); }
+
+/* ── Stats row ── */
+.stats-row { display: flex; flex-direction: row; gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card { flex: 1; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; border-top: 3px solid var(--blue); }
+
+/* ── Shared type classes ── */
+.mc-label { font-size: var(--fs-label); font-weight: var(--fw-label); text-transform: uppercase; letter-spacing: var(--ls-label); color: var(--text-soft); margin-bottom: 6px; }
+.mc-value { font-size: var(--fs-value); font-weight: var(--fw-value); color: var(--text); line-height: 1; margin-bottom: 4px; }
+.mc-delta { font-size: var(--fs-delta); font-weight: var(--fw-delta); }
+.up { color: #1a6e3c; }
+.dn { color: #b94a2c; }
+.neu { color: var(--text-soft); }
+
+/* ── Price stat block ── */
+.price-stat { display: flex; align-items: baseline; gap: 14px; padding: .9rem 0 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; flex-wrap: wrap; }
+.price-stat-value { font-size: var(--fs-value); font-weight: var(--fw-value); color: var(--text); line-height: 1; }
+.price-stat-label { font-size: var(--fs-label); font-weight: var(--fw-label); text-transform: uppercase; letter-spacing: var(--ls-label); color: var(--text-soft); margin-bottom: 4px; }
+.price-stat-delta { font-size: var(--fs-delta); font-weight: var(--fw-delta); }
+
+/* ── Chart controls ── */
+.chart-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+.chart-controls label { font-size: var(--fs-label); color: var(--text-soft); font-weight: var(--fw-label); text-transform: uppercase; letter-spacing: var(--ls-label); white-space: nowrap; }
+.ctrl-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+select { padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--white); color: var(--text); font-family: 'Lato', sans-serif; font-size: .85rem; font-weight: var(--fw-body); cursor: pointer; outline: none; }
+select:focus { border-color: var(--blue); }
+
+/* ── Property filters ── */
+.prop-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.pb { padding: 5px 14px; border-radius: 50px; border: 1.5px solid var(--border); background: var(--white); color: var(--text-mid); font-family: 'Lato', sans-serif; font-size: var(--fs-body); font-weight: var(--fw-body); cursor: pointer; transition: all .15s; }
+.pb.on { border-color: var(--blue); background: var(--blue); color: #fff; }
+.pb[data-k="Detached"].on  { background: #185FA5; border-color: #185FA5; }
+.pb[data-k="SemiDetached"].on { background: #0F6E56; border-color: #0F6E56; }
+.pb[data-k="Townhouse"].on { background: #854F0B; border-color: #854F0B; }
+.pb[data-k="Apartment"].on { background: #722444; border-color: #722444; }
+
+/* ── Chart cards ── */
+.chart-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.5rem; margin-bottom: 1.25rem; }
+.chart-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: .4rem; }
+.chart-title { font-size: var(--fs-h2); font-weight: var(--fw-h2); color: var(--text); }
+.chart-sub { font-size: var(--fs-body); color: var(--text-soft); margin-bottom: 1rem; line-height: 1.5; }
+.chart-wrap { position: relative; width: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 12px; font-size: var(--fs-body); color: var(--text-mid); font-weight: var(--fw-body); }
+.legend span { display: flex; align-items: center; gap: 5px; }
+.ld { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.ld.dashed { background: repeating-linear-gradient(90deg,#888 0,#888 4px,transparent 4px,transparent 8px); height: 2px; width: 16px; border-radius: 0; }
+
+/* ── Source note ── */
+.source-note { text-align: center; font-size: var(--fs-small); color: var(--text-soft); padding: 1rem 2rem 2rem; }
+
+/* ── Responsive ── */
+@media (max-width: 500px) {
+  .gauge-card { flex-direction: column; }
+  .gauge-right { width: 100%; }
+  .main { padding: 1rem; }
+  .header { padding: 1.2rem 1rem; }
+  .header-left h1 { font-size: 1.2rem; }
+  .stats-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div style="max-width:1000px;margin:0 auto;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08)">
+<div class="header">
+  <div class="header-left">
+    <h1>Edmonton's Real Estate Market</h1>
+    <p>Data sourced from the REALTORS® Association of Edmonton</p>
+  </div>
+  <div id="header-toggle" style="display:flex;flex-direction:column;align-items:center;gap:5px">
+    <div class="region-toggle">
+      <button class="rtb" id="btnGEA">Greater Edmonton Area</button>
+      <button class="rtb active" id="btnCity">City of Edmonton</button>
+    </div>
+    <div id="header-hint" style="font-size:.72rem;color:rgba(255,255,255,.4);font-family:'Lato',sans-serif;text-align:center">Toggle to see stats.</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div id="gauge"></div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Average Sold Price by Property Type</div>
+        <div class="chart-sub">Track how prices have moved over time for each home type</div>
+      </div>
+    </div>
+    <div class="chart-controls">
+      <label>Year range</label>
+      <select id="yearFrom"></select>
+      <span style="font-size:.8rem;color:var(--text-soft)">to</span>
+      <select id="yearTo"></select>
+      <div class="ctrl-divider"></div>
+      <select id="viewMode">
+        <option value="monthly">Monthly view</option>
+        <option value="annual">Annual averages</option>
+      </select>
+    </div>
+    <div class="price-stat">
+      <div>
+        <div class="price-stat-label" id="priceStatLabel">Avg sold price (all)</div>
+        <div class="price-stat-value" id="priceStatValue">—</div>
+        <div class="price-stat-delta" id="priceStatDelta"></div>
+      </div>
+    </div>
+    <div class="prop-filters" id="propFilters" style="margin-bottom:1rem">
+      <button class="pb on" data-k="all">All Types</button>
+      <button class="pb" data-k="Detached">Detached</button>
+      <button class="pb" data-k="SemiDetached">Semi-Detached</button>
+      <button class="pb" data-k="Townhouse">Townhouse</button>
+      <button class="pb" data-k="Apartment">Apartment</button>
+    </div>
+    <div class="legend" id="leg-price"></div>
+    <div class="chart-wrap" style="height:300px"><canvas id="priceChart"></canvas></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Market Conditions</div>
+    <div class="chart-sub">See how the market has shifted over time.</div>
+    <div class="legend">
+      <span><span class="ld" style="background:#185FA5"></span>Buyer's market (&lt;14%)</span>
+      <span><span class="ld" style="background:#c88a00"></span>Balanced market (14–21%)</span>
+      <span><span class="ld" style="background:#b94a2c"></span>Seller's market (&gt;21%)</span>
+    </div>
+    <div class="chart-wrap" style="height:260px"><canvas id="absChart"></canvas></div>
+  </div>
+
+  <div id="metrics"></div>
+
+</div>
+
+<div class="source-note">Data sourced from the REALTORS® Association of Edmonton &nbsp;·&nbsp; Absorption rate = total sales ÷ total inventory &nbsp;·&nbsp; Greater Edmonton Area includes surrounding cities such as St. Albert, Sherwood Park, Stony Plain, Fort Saskatchewan, and more.</div>
+
+</div>
+
+<script>
+
+
+// ── DATA ────────────────────────────────────────────────────────────────────
+
+const CITY_ABS = [
+  ["January",2020,349000,580,4491],["February",2020,356000,743,4941],["March",2020,341000,811,5225],
+  ["April",2020,358000,517,5236],["May",2020,357000,779,5623],["June",2020,357000,1370,5864],
+  ["July",2020,365000,1512,5705],["August",2020,371000,1267,5672],["September",2020,376000,1299,5471],
+  ["October",2020,379000,1164,5318],["November",2020,377000,1017,4742],["December",2020,357000,806,3842],
+  ["January",2021,364000,830,3984],["February",2021,373000,1076,4273],["March",2021,391000,1644,4815],
+  ["April",2021,389000,1934,5425],["May",2021,404000,1906,5899],["June",2021,399000,1908,6257],
+  ["July",2021,390000,1537,6295],["August",2021,384000,1430,6059],["September",2021,379000,1315,5849],
+  ["October",2021,380000,1310,5433],["November",2021,385000,1314,4650],["December",2021,380000,968,3550],
+  ["January",2022,376000,992,3731],["February",2022,411000,1681,3800],["March",2022,410000,2383,4199],
+  ["April",2022,412000,2118,5090],["May",2022,407000,1979,6042],["June",2022,402000,1832,6419],
+  ["July",2022,399000,1375,6604],["August",2022,371000,1249,6322],["September",2022,373000,1115,6164],
+  ["October",2022,375000,1053,5617],["November",2022,366000,908,5012],["December",2022,350000,712,3913],
+  ["January",2023,354000,704,3837],["February",2023,349000,909,4134],["March",2023,367000,1266,4528],
+  ["April",2023,386000,1377,5001],["May",2023,395000,1809,5200],["June",2023,389000,1755,5203],
+  ["July",2023,384000,1590,5126],["August",2023,382000,1606,4885],["September",2023,376000,1436,4740],
+  ["October",2023,378000,1300,4428],["November",2023,361000,1191,3882],["December",2023,373000,888,3213],
+  ["January",2024,381000,1058,3089],["February",2024,382000,1405,3252],["March",2024,397000,1737,3679],
+  ["April",2024,411000,2157,3804],["May",2024,417000,2152,4190],["June",2024,413000,1941,4304],
+  ["July",2024,415000,2018,4310],["August",2024,404000,1784,4277],["September",2024,411000,1544,4191],
+  ["October",2024,419000,1745,3765],["November",2024,409000,1372,3317],["December",2024,418000,1059,2552],
+  ["January",2025,421000,1187,2673],["February",2025,422000,1265,3014],["March",2025,440000,1757,3548],
+  ["April",2025,445000,1845,4044],["May",2025,431000,2065,4843],["June",2025,433000,1974,5032],
+  ["July",2025,432000,1941,5323],["August",2025,429000,1647,5318],["September",2025,420000,1456,5298],
+  ["October",2025,429000,1437,4978],["November",2025,424000,1163,4451],["December",2025,428000,914,3345],
+  ["January",2026,418000,791,3596],["February",2026,432000,1111,3934]
+];
+
+const CITY_PT = [
+  ["January",2020,425000,343000,221000,195000],["February",2020,446000,311000,215000,195000],
+  ["March",2020,413000,322000,226000,203000],["April",2020,421000,335000,240000,200000],
+  ["May",2020,426000,341000,221000,181000],["June",2020,429000,331000,233000,200000],
+  ["July",2020,445000,335000,239000,190000],["August",2020,447000,349000,250000,199000],
+  ["September",2020,448000,342000,253000,206000],["October",2020,449000,341000,243000,203000],
+  ["November",2020,452000,340000,241000,206000],["December",2020,431000,342000,225000,197000],
+  ["January",2021,435000,355000,240000,183000],["February",2021,447000,352000,244000,191000],
+  ["March",2021,471000,346000,242000,209000],["April",2021,471000,350000,243000,198000],
+  ["May",2021,477000,358000,253000,210000],["June",2021,492000,353000,243000,217000],
+  ["July",2021,476000,357000,252000,220000],["August",2021,470000,352000,252000,201000],
+  ["September",2021,467000,346000,234000,186000],["October",2021,464000,369000,238000,197000],
+  ["November",2021,469000,339000,248000,188000],["December",2021,472000,353000,243000,180000],
+  ["January",2022,452000,379000,239000,190000],["February",2022,502000,369000,261000,185000],
+  ["March",2022,509000,390000,265000,198000],["April",2022,515000,398000,274000,198000],
+  ["May",2022,498000,397000,260000,207000],["June",2022,503000,377000,257000,201000],
+  ["July",2022,510000,369000,253000,199000],["August",2022,479000,364000,244000,190000],
+  ["September",2022,475000,382000,251000,182000],["October",2022,469000,370000,256000,176000],
+  ["November",2022,460000,363000,237000,191000],["December",2022,461000,345000,234000,174000],
+  ["January",2023,449000,359000,241000,171000],["February",2023,450000,361000,250000,185000],
+  ["March",2023,475000,368000,236000,188000],["April",2023,493000,379000,260000,185000],
+  ["May",2023,498000,391000,251000,182000],["June",2023,490000,386000,254000,184000],
+  ["July",2023,491000,382000,256000,193000],["August",2023,493000,378000,250000,191000],
+  ["September",2023,489000,355000,264000,178000],["October",2023,476000,400000,259000,202000],
+  ["November",2023,467000,362000,272000,168000],["December",2023,484000,367000,260000,169000],
+  ["January",2024,474000,385000,270000,190000],["February",2024,494000,389000,272000,173000],
+  ["March",2024,502000,414000,276000,189000],["April",2024,527000,410000,292000,200000],
+  ["May",2024,544000,426000,282000,201000],["June",2024,529000,425000,285000,207000],
+  ["July",2024,548000,405000,286000,201000],["August",2024,528000,414000,286000,200000],
+  ["September",2024,538000,416000,283000,195000],["October",2024,549000,410000,298000,188000],
+  ["November",2024,521000,417000,280000,194000],["December",2024,533000,403000,288000,205000],
+  ["January",2025,555000,423000,300000,204000],["February",2025,553000,427000,295000,214000],
+  ["March",2025,574000,428000,312000,215000],["April",2025,580000,433000,304000,213000],
+  ["May",2025,561000,439000,301000,208000],["June",2025,562000,448000,300000,212000],
+  ["July",2025,569000,431000,290000,203000],["August",2025,551000,420000,299000,209000],
+  ["September",2025,540000,429000,296000,201000],["October",2025,544000,430000,292000,191000],
+  ["November",2025,545000,420000,282000,204000],["December",2025,552000,423000,294000,194000],
+  ["January",2026,542000,408000,295000,215000],["February",2026,562000,448000,294000,207000]
+];
+
+const GEA_ABS = [
+  ["January",2020,365000,799,6489],["Feb",2020,366000,1067,7071],["March",2020,358000,1198,7508],
+  ["April",2020,367000,764,7483],["May",2020,371000,1188,8054],["Jun",2020,375000,2115,8357],
+  ["July",2020,387000,2288,8350],["August",2020,393000,1956,8111],["Sept",2020,393000,1933,7800],
+  ["October",2020,402000,1750,7421],["November",2020,396000,1465,6553],["December",2020,378000,1137,5244],
+  ["January",2021,387000,1214,5533],["Feb",2021,392000,1635,5928],["March",2021,412000,2503,6785],
+  ["April",2021,407000,2958,7545],["May",2021,420000,2837,8089],["Jun",2021,417000,2801,8456],
+  ["July",2021,408000,2262,8391],["August",2021,403000,2113,8038],["Sept",2021,396000,1917,7702],
+  ["October",2021,396000,1919,7084],["November",2021,400000,1864,5974],["December",2021,401000,1336,4656],
+  ["January",2022,394000,1326,4610],["Feb",2022,424000,2281,4686],["March",2022,431000,3311,5188],
+  ["April",2022,435000,2932,6446],["May",2022,427000,2916,7544],["Jun",2022,426000,2653,8082],
+  ["July",2022,418000,2022,8417],["August",2022,396000,1848,8011],["Sept",2022,394000,1601,7801],
+  ["October",2022,399000,1498,7169],["November",2022,382000,1274,6380],["December",2022,375000,982,4954],
+  ["January",2023,370000,980,5163],["Feb",2023,369000,1287,5609],["March",2023,390000,1818,6291],
+  ["April",2023,409000,2018,6873],["May",2023,420000,2708,7050],["Jun",2023,412000,2588,7074],
+  ["July",2023,409000,2314,6910],["August",2023,399000,2238,6723],["Sept",2023,394000,2051,6489],
+  ["October",2023,396000,1797,6208],["November",2023,381000,1621,5444],["December",2023,388000,1217,4626],
+  ["January",2024,399000,1433,4542],["February",2024,407000,1961,4766],["March",2024,421000,2458,5250],
+  ["April",2024,432000,3106,5393],["May",2024,441000,3209,5743],["June",2024,439000,2837,5860],
+  ["July",2024,440000,2936,5791],["August",2024,435000,2591,5792],["September",2024,440000,2256,5701],
+  ["October",2024,440000,2489,5125],["November",2024,436000,1920,4506],["December",2024,436000,1428,3496],
+  ["January",2025,438000,1597,3731],["February",2025,450000,1825,4157],["March",2025,460000,2494,4848],
+  ["April",2025,470000,2710,5436],["May",2025,464000,2967,6520],["June",2025,465000,2877,6768],
+  ["July",2025,463000,2860,7083],["August",2025,461000,2382,7141],["September",2025,453000,2192,7085],
+  ["October",2025,455000,2061,6665],["November",2025,447000,1654,5961],["December",2025,455000,1315,4517],
+  ["January",2026,449000,1151,4901],["February",2026,455000,1606,5463]
+];
+
+// GEA property type data — [Month, Year, Detached, SemiDetached, Townhouse, Apartment]
+const GEA_PT = [
+  ["January",2020,446000,360000,237000,199000],["February",2020,455000,340000,232000,200000],
+  ["March",2020,435000,345000,240000,205000],["April",2020,440000,350000,248000,204000],
+  ["May",2020,448000,355000,238000,188000],["June",2020,451000,348000,246000,205000],
+  ["July",2020,467000,352000,252000,196000],["August",2020,469000,365000,263000,204000],
+  ["September",2020,470000,360000,267000,211000],["October",2020,472000,358000,257000,208000],
+  ["November",2020,474000,357000,255000,211000],["December",2020,453000,359000,238000,202000],
+  ["January",2021,457000,372000,253000,188000],["February",2021,469000,369000,257000,196000],
+  ["March",2021,493000,363000,255000,214000],["April",2021,494000,367000,256000,203000],
+  ["May",2021,500000,375000,266000,215000],["June",2021,515000,370000,256000,222000],
+  ["July",2021,499000,374000,265000,225000],["August",2021,493000,369000,265000,206000],
+  ["September",2021,490000,363000,247000,191000],["October",2021,487000,387000,251000,202000],
+  ["November",2021,492000,356000,261000,193000],["December",2021,495000,370000,256000,185000],
+  ["January",2022,474000,396000,252000,195000],["February",2022,526000,387000,274000,190000],
+  ["March",2022,533000,409000,279000,203000],["April",2022,540000,417000,288000,203000],
+  ["May",2022,522000,416000,274000,212000],["June",2022,527000,396000,271000,206000],
+  ["July",2022,535000,387000,267000,204000],["August",2022,503000,382000,258000,195000],
+  ["September",2022,499000,401000,265000,187000],["October",2022,493000,389000,270000,181000],
+  ["November",2022,484000,381000,251000,196000],["December",2022,485000,362000,248000,179000],
+  ["January",2023,472000,377000,255000,176000],["February",2023,473000,379000,264000,190000],
+  ["March",2023,499000,386000,250000,193000],["April",2023,518000,398000,274000,190000],
+  ["May",2023,523000,410000,265000,187000],["June",2023,515000,405000,268000,189000],
+  ["July",2023,516000,401000,270000,198000],["August",2023,518000,397000,264000,196000],
+  ["September",2023,514000,373000,278000,183000],["October",2023,501000,420000,273000,207000],
+  ["November",2023,492000,380000,287000,173000],["December",2023,509000,385000,274000,174000],
+  ["January",2024,499000,404000,285000,195000],["February",2024,519000,408000,287000,178000],
+  ["March",2024,527000,435000,291000,194000],["April",2024,554000,431000,308000,205000],
+  ["May",2024,571000,447000,298000,206000],["June",2024,556000,446000,301000,212000],
+  ["July",2024,576000,425000,302000,206000],["August",2024,555000,435000,302000,205000],
+  ["September",2024,565000,437000,299000,200000],["October",2024,577000,431000,315000,193000],
+  ["November",2024,548000,438000,296000,199000],["December",2024,561000,424000,304000,210000],
+  ["January",2025,583000,444000,316000,209000],["February",2025,571000,442000,308000,214000]
+];
+
+const NEW_LISTINGS = [
+  ["January",2020,2262],["Feb",2020,2558],["March",2020,2797],["April",2020,1877],
+  ["May",2020,3072],["Jun",2020,3694],["July",2020,3269],["August",2020,2914],
+  ["Sept",2020,3029],["October",2020,2741],["November",2020,1854],["December",2020,1255],
+  ["January",2021,2411],["Feb",2021,2661],["March",2021,4123],["April",2021,4448],
+  ["May",2021,4268],["Jun",2021,4250],["July",2021,3432],["August",2021,3178],
+  ["Sept",2021,3095],["October",2021,2654],["November",2021,2086],["December",2021,1383],
+  ["January",2022,2110],["Feb",2022,2959],["March",2022,4294],["April",2022,4716],
+  ["May",2022,4710],["Jun",2022,4332],["July",2022,3634],["August",2022,3170],
+  ["Sept",2022,3117],["October",2022,2599],["November",2022,1967],["December",2022,1174],
+  ["January",2023,2249],["Feb",2023,2524],["March",2023,3297],["April",2023,3430],
+  ["May",2023,3839],["Jun",2023,3619],["July",2023,3283],["August",2023,3220],
+  ["Sept",2023,3012],["October",2023,2686],["November",2023,2082],["December",2023,1474],
+  ["January",2024,2161],["February",2024,2712],["March",2024,3514],["April",2024,3812],
+  ["May",2024,4220],["June",2024,3622],["July",2024,3649],["August",2024,3467],
+  ["September",2024,3215],["October",2024,2934],["November",2024,2114],["December",2024,1367],
+  ["January",2025,2452],["February",2025,2723],["March",2025,3780],["April",2025,4012],
+  ["May",2025,4917],["June",2025,4218],["July",2025,4388],["August",2025,3785],
+  ["September",2025,3645],["October",2025,3306],["November",2025,2285],["December",2025,1389],
+  ["January",2026,2518],["February",2026,3020]
+];
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+const MSH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function getMI(m) {
+  const l = m.toLowerCase();
+  let i = MONTHS.findIndex(x => x.toLowerCase() === l);
+  if (i < 0) i = MONTHS.findIndex(x => x.toLowerCase().startsWith(l.slice(0,3)));
+  return i >= 0 ? i : 0;
+}
+function rowLabel(r) { return MSH[getMI(r[0])] + ' \'' + String(r[1]).slice(2); }
+function filterY(d, f, t) { return d.filter(r => r[1] >= +f && r[1] <= +t); }
+function calcAbs(solds, inv) { return inv > 0 ? Math.round((solds / inv) * 1000) / 10 : 0; }
+
+function aggAbs(arr) {
+  const m = {};
+  arr.forEach(r => {
+    const y = r[1];
+    if (!m[y]) m[y] = { price: 0, solds: 0, inv: 0, n: 0 };
+    m[y].price += r[2]; m[y].solds += r[3]; m[y].inv += r[4]; m[y].n++;
+  });
+  return Object.entries(m).sort(([a],[b]) => +a - +b).map(([y,v]) => [
+    'Annual', +y, Math.round(v.price/v.n), Math.round(v.solds/v.n), Math.round(v.inv/v.n)
+  ]);
+}
+
+function aggPT(arr) {
+  const m = {};
+  arr.forEach(r => {
+    const y = r[1];
+    if (!m[y]) m[y] = { d:0,s:0,t:0,a:0,n:0 };
+    m[y].d += r[2]; m[y].s += r[3]; m[y].t += r[4]; m[y].a += r[5]; m[y].n++;
+  });
+  return Object.entries(m).sort(([a],[b]) => +a - +b).map(([y,v]) => [
+    'Annual', +y, Math.round(v.d/v.n), Math.round(v.s/v.n), Math.round(v.t/v.n), Math.round(v.a/v.n)
+  ]);
+}
+
+const PCOLS = { Detached:'#185FA5', SemiDetached:'#0F6E56', Townhouse:'#854F0B', Apartment:'#722444' };
+const PLBLS = { Detached:'Detached', SemiDetached:'Semi-detached', Townhouse:'Townhouse', Apartment:'Apartment' };
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let region = 'city', propKey = 'all';
+let priceChart, absChart, soldChart, nlChart, invChart;
+
+// ── YEAR SELECTS ─────────────────────────────────────────────────────────────
+const allYears = [...new Set(CITY_ABS.map(r => r[1]))].sort();
+const yFromEl = document.getElementById('yearFrom');
+const yToEl = document.getElementById('yearTo');
+allYears.forEach(y => { yFromEl.add(new Option(y, y)); yToEl.add(new Option(y, y)); });
+yFromEl.value = '2020'; yToEl.value = '2026';
+
+// ── GAUGE ────────────────────────────────────────────────────────────────────
+function buildGaugeSVG(absVal) {
+  // Semicircle: centre (260,240), radius 180
+  // 0% = 180deg (left), 70% = 0deg (right), sweeps left to right
+  const cx=260, cy=240, r=180, sw=52, maxAbs=70;
+
+  function pt(deg) {
+    const rad = deg * Math.PI / 180;
+    return [cx + r * Math.cos(rad), cy - r * Math.sin(rad)];
+  }
+
+  // Arc from angle a1 down to a2 (both in standard math degrees, a1>a2)
+  // sweep=1 in SVG screen coords goes clockwise = left to right visually when starting from left
+  function arcD(a1, a2) {
+    const [x1,y1] = pt(a1);
+    const [x2,y2] = pt(a2);
+    return `M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 0,1 ${x2.toFixed(1)},${y2.toFixed(1)}`;
+  }
+
+  // Zone angles: 0%=180, 14%=144, 21%=126, 70%=0
+  const a0=180, a14=180-(14/maxAbs)*180, a21=180-(21/maxAbs)*180, a70=0;
+  const aNeedle = 180 - (Math.min(absVal, maxAbs)/maxAbs)*180;
+
+  // Needle: clean line shaft with tapered pointer tip
+  const [nx,ny] = pt(aNeedle);
+
+  return `<svg viewBox="20 30 480 230" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:220px;display:block">
+    <!-- track -->
+    <path d="${arcD(180,0)}" fill="none" stroke="#e8edf2" stroke-width="${sw}" stroke-linecap="butt"/>
+    <!-- buyer zone (blue) -->
+    <path d="${arcD(a0,a14)}" fill="none" stroke="#185FA5" stroke-width="${sw}" stroke-linecap="butt"/>
+    <!-- balanced zone (amber) -->
+    <path d="${arcD(a14,a21)}" fill="none" stroke="#c88a00" stroke-width="${sw}" stroke-linecap="butt"/>
+    <!-- seller zone (red) -->
+    <path d="${arcD(a21,a70)}" fill="none" stroke="#b94a2c" stroke-width="${sw}" stroke-linecap="butt"/>
+    <!-- needle: thick at base, tapers to sharp point at tip -->
+    <polygon points="
+      ${nx.toFixed(1)},${ny.toFixed(1)}
+      ${(cx + (ny-cy)*0.05).toFixed(1)},${(cy - (nx-cx)*0.05).toFixed(1)}
+      ${(cx - (ny-cy)*0.05).toFixed(1)},${(cy + (nx-cx)*0.05).toFixed(1)}
+    " fill="#1a2a3a"/>
+  </svg>`;
+}
+
+// ── METRICS ──────────────────────────────────────────────────────────────────
+function buildMetrics(absF, ptF, pk) {
+  const lat = absF[absF.length - 1], prev = absF[absF.length - 2];
+  if (!lat) return;
+
+  const absVal = calcAbs(lat[3], lat[4]);
+  const prevAbs = prev ? calcAbs(prev[3], prev[4]) : absVal;
+  const absDelta = absVal - prevAbs;
+  const absDeltaUp = absDelta >= 0;
+
+  let price, pPrev, pLbl;
+  const ki = { Detached:2, SemiDetached:3, Townhouse:4, Apartment:5 };
+  if (pk === 'all') {
+    price = lat[2]; pPrev = prev ? prev[2] : price; pLbl = 'Avg sold price (all)';
+  } else if (ptF && ptF.length) {
+    const lp = ptF[ptF.length-1], pp = ptF[ptF.length-2];
+    price = lp[ki[pk]]; pPrev = pp ? pp[ki[pk]] : price;
+    pLbl = 'Avg price \u2014 ' + PLBLS[pk];
+  } else {
+    price = lat[2]; pPrev = prev ? prev[2] : price; pLbl = 'Avg sold price';
+  }
+
+  const pd = ((price-pPrev)/pPrev*100);
+  const sold = lat[3], pSold = prev ? prev[3] : sold;
+  const soldPct = pSold > 0 ? ((sold - pSold) / pSold * 100) : 0;
+  const inv = lat[4];
+
+  const mLabel = absVal>21 ? "Seller's Market" : absVal>=14 ? "Balanced Market" : "Buyer's Market";
+  const mCol   = absVal>21 ? '#b94a2c'          : absVal>=14 ? '#c88a00'          : '#185FA5';
+
+  function dh(v, pct, points=false) {
+    const up=v>0, cl=up?'up':'dn';
+    const txt = points ? Math.abs(v).toFixed(1)+' pts compared to last month'
+              : pct    ? Math.abs(v).toFixed(1)+'% compared to last month'
+                       : Math.abs(v).toLocaleString()+' compared to last month';
+    return `<div class="mc-delta ${cl}">${up?'▲':'▼'} ${txt}</div>`;
+  }
+
+  // Update price stat block
+  document.getElementById('priceStatLabel').textContent = pLbl;
+  document.getElementById('priceStatValue').textContent = '$'+Math.round(price/1000)+'K';
+  const pdUp = pd>0;
+  document.getElementById('priceStatDelta').innerHTML =
+    `<span class="${pdUp?'up':'dn'}">${pdUp?'▲':'▼'} ${Math.abs(pd).toFixed(1)}% compared to last month</span>`;
+
+  const invPct = prev ? ((inv - prev[4]) / prev[4] * 100) : 0;
+
+  // New listings — match by year filter
+  const nlF = NEW_LISTINGS.filter(r => r[1] >= absF[0][1] && r[1] <= absF[absF.length-1][1]);
+  const latNL = nlF[nlF.length-1], prevNL = nlF[nlF.length-2];
+  const newListings = latNL ? latNL[2] : 0;
+  const prevListings = prevNL ? prevNL[2] : newListings;
+  const nlPct = prevListings > 0 ? ((newListings - prevListings) / prevListings * 100) : 0;
+
+  document.getElementById('gauge').innerHTML = `
+    <div class="gauge-card" style="border-top:3px solid ${mCol}">
+      <div class="gauge-left">
+        <div class="gauge-card-title">Market Gauge</div>
+        <div class="mc-label" style="margin-bottom:0;margin-top:calc(.4rem - .75rem)">As of March 2026</div>
+        <div class="gauge-headline" style="color:${mCol};font-size:1.1rem;font-weight:500;margin-top:2px">Currently a ${mLabel}</div>
+        <div class="gauge-legend">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.45rem .25rem">
+            <div class="gauge-legend-item">
+              <span class="gauge-legend-swatch" style="background:#185FA5"></span>
+              <div><div class="gauge-legend-name">Buyer's Market</div><div class="gauge-legend-range">&lt;14%</div></div>
+            </div>
+            <div class="gauge-legend-item">
+              <span class="gauge-legend-swatch" style="background:#b94a2c"></span>
+              <div><div class="gauge-legend-name">Seller's Market</div><div class="gauge-legend-range">&gt;21%</div></div>
+            </div>
+            <div class="gauge-legend-item">
+              <span class="gauge-legend-swatch" style="background:#c88a00"></span>
+              <div><div class="gauge-legend-name">Balanced Market</div><div class="gauge-legend-range">14&ndash;21%</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="gauge-right">
+        ${buildGaugeSVG(absVal)}
+        <div class="gauge-readout">
+          <div class="gauge-readout-pct">${absVal.toFixed(1)}% Sold</div>
+          <div style="font-size:calc(var(--fs-delta) * 0.75)">${dh(absDelta, false, true)}</div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('metrics').innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="mc-label">Homes sold</div>
+        <div class="mc-value">${sold.toLocaleString()}</div>
+        ${dh(soldPct, true)}
+      </div>
+      <div class="stat-card">
+        <div class="mc-label">New listings</div>
+        <div class="mc-value">${newListings.toLocaleString()}</div>
+        ${dh(nlPct, true)}
+      </div>
+      <div class="stat-card">
+        <div class="mc-label">Total inventory</div>
+        <div class="mc-value">${inv.toLocaleString()}</div>
+        ${dh(invPct, true)}
+      </div>
+    </div>`;
+}
+
+// ── CHARTS ───────────────────────────────────────────────────────────────────
+const TC = { color: '#999999', font: { family: 'Lato', size: 12, weight: '400' } };
+const GC = { color: 'rgba(0,0,0,0.05)' };
+
+function render() {
+  const yf = +yFromEl.value, yt = +yToEl.value;
+  const mode = document.getElementById('viewMode').value;
+
+  const absSource = region === 'city' ? CITY_ABS : GEA_ABS;
+  const ptSource = region === 'city' ? CITY_PT : GEA_PT;
+
+  let absF = filterY(absSource, yf, yt);
+  let ptF = filterY(ptSource, yf, yt);
+
+  let absRows, ptRows, absLabels, ptLabels;
+  if (mode === 'annual') {
+    absRows = aggAbs(absF);
+    ptRows = aggPT(ptF);
+    absLabels = absRows.map(r => String(r[1]));
+    ptLabels = ptRows.map(r => String(r[1]));
+  } else {
+    absRows = absF;
+    ptRows = ptF;
+    absLabels = absRows.map(r => rowLabel(r));
+    ptLabels = ptRows.map(r => rowLabel(r));
+  }
+
+  buildMetrics(absF, ptF, propKey);
+
+  // Price chart — stacked bar for annual, line for monthly
+  const allKeys = ['Detached','SemiDetached','Townhouse','Apartment'];
+  const ptIdxMap = { Detached:2, SemiDetached:3, Townhouse:4, Apartment:5 };
+  const visKeys = propKey === 'all' ? allKeys : [propKey];
+  const isAnnual = mode === 'annual';
+
+  const PCOLS_SOLID = {
+    Detached: '#185FA5',
+    SemiDetached: '#0F6E56',
+    Townhouse: '#BA7517',
+    Apartment: '#993556'
+  };
+
+  const datasets = visKeys.map(k => ({
+    label: PLBLS[k],
+    data: ptRows.map(r => r[ptIdxMap[k]]),
+    borderColor: isAnnual ? 'rgba(255,255,255,0.4)' : PCOLS_SOLID[k],
+    backgroundColor: isAnnual ? PCOLS_SOLID[k] : 'transparent',
+    borderWidth: isAnnual ? 1 : 2,
+    tension: .35, pointRadius: 0,
+    ...(isAnnual ? {} : {})
+  }));
+
+  const legItems = visKeys.map(k => `<span><span class="ld" style="background:${PCOLS_SOLID[k]}"></span>${PLBLS[k]}</span>`);
+  document.getElementById('leg-price').innerHTML = legItems.join('');
+
+  if (priceChart) priceChart.destroy();
+  priceChart = new Chart(document.getElementById('priceChart'), {
+    type: isAnnual ? 'bar' : 'line',
+    data: { labels: ptLabels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ' ' + c.dataset.label + ': $' + c.parsed.y.toLocaleString() } }
+      },
+      scales: {
+        x: {
+          stacked: false,
+          ticks: { ...TC, autoSkip: true, maxTicksLimit: 14, maxRotation: 0 },
+          grid: { display: false }
+        },
+        y: {
+          stacked: false,
+          ticks: { ...TC, callback: v => '$' + Math.round(v/1000) + 'K' },
+          grid: { ...GC }
+        }
+      }
+    }
+  });
+
+  // Absorption history chart
+  const absVals = absRows.map(r => calcAbs(r[3], r[4]));
+  const absBg = absVals.map(v => v > 21 ? 'rgba(185,74,44,0.75)' : v >= 14 ? 'rgba(200,138,0,0.75)' : 'rgba(24,95,165,0.75)');
+
+  if (absChart) absChart.destroy();
+  absChart = new Chart(document.getElementById('absChart'), {
+    type: 'line',
+    data: {
+      labels: absLabels,
+      datasets: [{
+        label: '% of homes sold',
+        data: absVals,
+        borderColor: '#185FA5',
+        backgroundColor: 'rgba(24,95,165,0.06)',
+        fill: true, tension: .35,
+        pointRadius: 3.5,
+        pointBackgroundColor: absBg,
+        pointBorderColor: absBg,
+        pointBorderWidth: 0,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => {
+              const v = c.parsed.y;
+              const s = v > 21 ? "Seller's market" : v >= 14 ? 'Balanced' : "Buyer's market";
+              return ` ${v.toFixed(1)}% sold — ${s}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { ...TC, autoSkip: true, maxTicksLimit: 14, maxRotation: 45 }, grid: { ...GC } },
+        y: {
+          min: 0, max: 70,
+          ticks: { ...TC, callback: v => v + '%' },
+          grid: { color: ctx => {
+            if (ctx.tick.value === 21) return 'rgba(185,74,44,0.3)';
+            if (ctx.tick.value === 14) return 'rgba(24,95,165,0.3)';
+            return 'rgba(0,0,0,0.05)';
+          }}
+        }
+      }
+    }
+  });
+
+  // Sales chart
+  const soldVals = absRows.map(r => r[3]);
+}
+
+// ── EVENT LISTENERS ──────────────────────────────────────────────────────────
+document.getElementById('btnCity').addEventListener('click', () => {
+  region = 'city';
+  document.getElementById('btnCity').classList.add('active');
+  document.getElementById('btnGEA').classList.remove('active');
+  document.querySelectorAll('.pb:not(#pb-all)').forEach(b => b.style.display = '');
+  render();
+});
+
+document.getElementById('btnGEA').addEventListener('click', () => {
+  region = 'gea';
+  document.getElementById('btnGEA').classList.add('active');
+  document.getElementById('btnCity').classList.remove('active');
+  render();
+});
+
+document.getElementById('yearFrom').addEventListener('change', render);
+document.getElementById('yearTo').addEventListener('change', render);
+document.getElementById('viewMode').addEventListener('change', render);
+
+document.getElementById('propFilters').addEventListener('click', e => {
+  const btn = e.target.closest('.pb');
+  if (!btn) return;
+  propKey = btn.dataset.k;
+  document.querySelectorAll('.pb').forEach(b => b.classList.toggle('on', b.dataset.k === propKey));
+  render();
+});
+
+render();
+
+
+</script>
+</body>
+</html>
