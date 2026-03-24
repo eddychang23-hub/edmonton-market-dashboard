@@ -42,13 +42,13 @@
 body { font-family: 'Lato', sans-serif; background: transparent; color: var(--text); }
 
 /* ── Header ── */
-.header { background: #0e1f3d; padding: 1.5rem 2rem 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
-.header-left h1 { font-family: 'Lato', sans-serif; font-size: 1.6rem; color: #fff; font-weight: 400; }
-.header-left p { font-size: var(--fs-body); color: rgba(255,255,255,.5); margin-top: 2px; }
+.header { background: transparent; padding: 1.5rem 0.5rem 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.header-left h1 { font-family: 'Lato', sans-serif; font-size: 1.6rem; color: var(--text); font-weight: 700; }
+.header-left p { font-size: var(--fs-body); color: var(--text-soft); margin-top: 2px; }
 
-.region-toggle { display: flex; background: rgba(255,255,255,.1); border-radius: 50px; padding: 3px; gap: 2px; }
-.rtb { padding: 7px 18px; border-radius: 50px; border: none; font-family: 'Lato', sans-serif; font-size: var(--fs-body); font-weight: var(--fw-body); cursor: pointer; color: rgba(255,255,255,.6); background: transparent; transition: all .2s; white-space: nowrap; }
-.rtb.active { background: #fff; color: var(--navy); }
+.region-toggle { display: flex; background: var(--border); border-radius: 50px; padding: 3px; gap: 2px; }
+.rtb { padding: 7px 18px; border-radius: 50px; border: none; font-family: 'Lato', sans-serif; font-size: var(--fs-body); font-weight: var(--fw-body); cursor: pointer; color: var(--text-soft); background: transparent; transition: all .2s; white-space: nowrap; }
+.rtb.active { background: var(--white); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
 /* ── Main ── */
 .main { padding: 1rem 0 0; margin: 0 auto; }
@@ -141,7 +141,7 @@ select:focus { border-color: var(--blue); }
       <button class="rtb" id="btnGEA">Greater Edmonton Area</button>
       <button class="rtb active" id="btnCity">City of Edmonton</button>
     </div>
-    <div id="header-hint" style="font-size:.72rem;color:rgba(255,255,255,.4);font-family:'Lato',sans-serif;padding-left:6px">Toggle to see stats.</div>
+    <div id="header-hint" style="font-size:.72rem;color:var(--text-soft);font-family:'Lato',sans-serif;padding-left:6px">Toggle to see stats.</div>
   </div>
 </div>
 
