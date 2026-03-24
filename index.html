@@ -569,36 +569,17 @@ function buildMetrics(absF, ptF, pk) {
 const TC = { color: '#999999', font: { family: 'Lato', size: 12, weight: '400' } };
 const GC = { color: 'rgba(0,0,0,0.05)' };
 
-function render() {
-  const yf = +yFromEl.value, yt = +yToEl.value;
-  const mode = document.getElementById('viewMode').value;
+// Cached data shared between render and renderPriceChart
+let _absF, _ptF, _ptRows, _ptLabels, _mode;
 
-  const absSource = region === 'city' ? CITY_ABS : GEA_ABS;
-  const ptSource = region === 'city' ? CITY_PT : GEA_PT;
-
-  let absF = filterY(absSource, yf, yt);
-  let ptF = filterY(ptSource, yf, yt);
-
-  let absRows, ptRows, absLabels, ptLabels;
-  if (mode === 'annual') {
-    absRows = aggAbs(absF);
-    ptRows = aggPT(ptF);
-    absLabels = absRows.map(r => String(r[1]));
-    ptLabels = ptRows.map(r => String(r[1]));
-  } else {
-    absRows = absF;
-    ptRows = ptF;
-    absLabels = absRows.map(r => rowLabel(r));
-    ptLabels = ptRows.map(r => rowLabel(r));
-  }
-
-  buildMetrics(absF, ptF, propKey);
+function renderPriceChart() {
+  buildMetrics(_absF, _ptF, propKey);
 
   // Price chart — stacked bar for annual, line for monthly
   const allKeys = ['Detached','SemiDetached','Townhouse','Apartment'];
   const ptIdxMap = { Detached:2, SemiDetached:3, Townhouse:4, Apartment:5 };
   const visKeys = propKey === 'all' ? allKeys : [propKey];
-  const isAnnual = mode === 'annual';
+  const isAnnual = _mode === 'annual';
 
   const PCOLS_SOLID = {
     Detached: '#185FA5',
@@ -609,7 +590,7 @@ function render() {
 
   const datasets = visKeys.map(k => ({
     label: PLBLS[k],
-    data: ptRows.map(r => r[ptIdxMap[k]]),
+    data: _ptRows.map(r => r[ptIdxMap[k]]),
     borderColor: isAnnual ? 'rgba(255,255,255,0.4)' : PCOLS_SOLID[k],
     backgroundColor: isAnnual ? PCOLS_SOLID[k] : 'transparent',
     borderWidth: isAnnual ? 1 : 2,
@@ -623,7 +604,7 @@ function render() {
   if (priceChart) priceChart.destroy();
   priceChart = new Chart(document.getElementById('priceChart'), {
     type: isAnnual ? 'bar' : 'line',
-    data: { labels: ptLabels, datasets },
+    data: { labels: _ptLabels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
@@ -645,6 +626,32 @@ function render() {
       }
     }
   });
+}
+
+function render() {
+  const yf = +yFromEl.value, yt = +yToEl.value;
+  _mode = document.getElementById('viewMode').value;
+
+  const absSource = region === 'city' ? CITY_ABS : GEA_ABS;
+  const ptSource = region === 'city' ? CITY_PT : GEA_PT;
+
+  _absF = filterY(absSource, yf, yt);
+  _ptF = filterY(ptSource, yf, yt);
+
+  let absRows, absLabels;
+  if (_mode === 'annual') {
+    absRows = aggAbs(_absF);
+    _ptRows = aggPT(_ptF);
+    absLabels = absRows.map(r => String(r[1]));
+    _ptLabels = _ptRows.map(r => String(r[1]));
+  } else {
+    absRows = _absF;
+    _ptRows = _ptF;
+    absLabels = absRows.map(r => rowLabel(r));
+    _ptLabels = _ptRows.map(r => rowLabel(r));
+  }
+
+  renderPriceChart();
 
   // Absorption history chart
   const absVals = absRows.map(r => calcAbs(r[3], r[4]));
@@ -727,7 +734,7 @@ document.getElementById('propFilters').addEventListener('click', e => {
   if (!btn) return;
   propKey = btn.dataset.k;
   document.querySelectorAll('.pb').forEach(b => b.classList.toggle('on', b.dataset.k === propKey));
-  render();
+  renderPriceChart();
 });
 
 render();
