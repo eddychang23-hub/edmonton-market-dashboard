@@ -68,8 +68,9 @@ body { font-family: 'Lato', sans-serif; background: transparent; color: var(--te
 .gauge-readout-pct { font-size: calc(var(--fs-h2) * 0.75); font-weight: var(--fw-h2); color: var(--text); }
 
 /* ── Stats row ── */
-.stats-row { display: flex; flex-direction: row; gap: 0; margin-bottom: 1.5rem; }
-.stat-card { flex: 1; background: var(--white); border: 1px solid var(--border); border-radius: 0; padding: 1.25rem 1.5rem; border-top: 3px solid var(--blue); }
+.stats-row { display: flex; flex-direction: row; gap: 0; margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.stat-card { flex: 1; background: var(--white); padding: 1.25rem 1.5rem; border-top: 3px solid var(--blue); border-right: 1px solid var(--border); }
+.stat-card:last-child { border-right: none; }
 
 /* ── Shared type classes ── */
 .mc-label { font-size: var(--fs-label); font-weight: var(--fw-label); text-transform: uppercase; letter-spacing: var(--ls-label); color: var(--text-soft); margin-bottom: 6px; }
