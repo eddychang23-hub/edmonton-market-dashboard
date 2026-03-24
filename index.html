@@ -536,8 +536,8 @@ function buildMetrics(absF, ptF, pk) {
         </div>
       </div>
       <div class="gauge-right">
-        <div style="font-size:var(--fs-h2);font-weight:var(--fw-h2);color:var(--text);margin-bottom:0.5rem">Absorption Index</div>
-        ${buildGaugeSVG(absVal)}
+        <div style="font-size:var(--fs-h2);font-weight:var(--fw-h2);color:var(--text);margin-bottom:1.25rem">Absorption Index</div>
+        <div style="width:80%">${buildGaugeSVG(absVal)}</div>
         <div class="gauge-readout">
           <div class="gauge-readout-pct">${absVal.toFixed(1)}% Sold</div>
           <div style="font-size:calc(var(--fs-delta) * 0.75)">${dh(absDelta, false, true)}</div>
