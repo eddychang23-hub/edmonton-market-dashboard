@@ -656,7 +656,8 @@ function render() {
 
   // Absorption history chart
   const absVals = absRows.map(r => calcAbs(r[3], r[4]));
-  const absBg = absVals.map(v => v > 21 ? 'rgba(185,74,44,0.75)' : v >= 14 ? 'rgba(200,138,0,0.75)' : 'rgba(24,95,165,0.75)');
+  const zoneColor = v => v > 21 ? 'rgba(185,74,44,0.85)' : v >= 14 ? 'rgba(180,130,0,0.85)' : 'rgba(24,95,165,0.85)';
+  const segColors = absVals.map(v => zoneColor(v));
 
   if (absChart) absChart.destroy();
   absChart = new Chart(document.getElementById('absChart'), {
@@ -666,12 +667,15 @@ function render() {
       datasets: [{
         label: '% of homes sold',
         data: absVals,
-        borderColor: '#333',
+        segment: {
+          borderColor: ctx => zoneColor(ctx.p1.parsed.y)
+        },
+        borderColor: segColors,
         backgroundColor: 'transparent',
         fill: false, tension: .35,
         pointRadius: 3.5,
-        pointBackgroundColor: absBg,
-        pointBorderColor: absBg,
+        pointBackgroundColor: segColors,
+        pointBorderColor: segColors,
         pointBorderWidth: 0,
         borderWidth: 2.5
       }]
@@ -707,7 +711,7 @@ function render() {
             sellerLine: {
               type: 'line', drawTime: 'beforeDatasetsDraw',
               yMin: 21, yMax: 21,
-              borderColor: 'rgba(185,74,44,0.4)', borderWidth: 1.5, borderDash: [4, 4]
+              borderColor: 'rgba(185,74,44,0.25)', borderWidth: 1
             },
             balancedZone: {
               type: 'box', drawTime: 'beforeDatasetsDraw',
@@ -724,7 +728,7 @@ function render() {
             buyerLine: {
               type: 'line', drawTime: 'beforeDatasetsDraw',
               yMin: 14, yMax: 14,
-              borderColor: 'rgba(24,95,165,0.4)', borderWidth: 1.5, borderDash: [4, 4]
+              borderColor: 'rgba(24,95,165,0.25)', borderWidth: 1
             },
             buyerZone: {
               type: 'box', drawTime: 'beforeDatasetsDraw',
