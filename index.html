@@ -6,6 +6,7 @@
 <title>Edmonton's Real Estate Market Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
 :root {
   --navy: #0e1f3d;
@@ -665,14 +666,14 @@ function render() {
       datasets: [{
         label: '% of homes sold',
         data: absVals,
-        borderColor: '#185FA5',
-        backgroundColor: 'rgba(24,95,165,0.06)',
-        fill: true, tension: .35,
+        borderColor: '#333',
+        backgroundColor: 'transparent',
+        fill: false, tension: .35,
         pointRadius: 3.5,
         pointBackgroundColor: absBg,
         pointBorderColor: absBg,
         pointBorderWidth: 0,
-        borderWidth: 2
+        borderWidth: 2.5
       }]
     },
     options: {
@@ -688,18 +689,64 @@ function render() {
               return ` ${v.toFixed(1)}% sold — ${s}`;
             }
           }
+        },
+        annotation: {
+          annotations: {
+            sellerZone: {
+              type: 'box', drawTime: 'beforeDatasetsDraw',
+              yMin: 21, yMax: 70,
+              backgroundColor: 'rgba(239,154,154,0.3)',
+              borderWidth: 0,
+              label: {
+                display: true, content: "Seller's Market",
+                position: { x: 'end', y: 'start' },
+                color: 'rgba(185,74,44,0.6)', font: { size: 12, family: 'Lato', weight: '400' },
+                padding: 4, backgroundColor: 'transparent'
+              }
+            },
+            sellerLine: {
+              type: 'line', drawTime: 'beforeDatasetsDraw',
+              yMin: 21, yMax: 21,
+              borderColor: 'rgba(185,74,44,0.4)', borderWidth: 1.5, borderDash: [4, 4]
+            },
+            balancedZone: {
+              type: 'box', drawTime: 'beforeDatasetsDraw',
+              yMin: 14, yMax: 21,
+              backgroundColor: 'rgba(255,224,130,0.25)',
+              borderWidth: 0,
+              label: {
+                display: true, content: 'Balanced Market',
+                position: { x: 'end', y: 'center' },
+                color: 'rgba(180,130,0,0.6)', font: { size: 12, family: 'Lato', weight: '400' },
+                padding: 4, backgroundColor: 'transparent'
+              }
+            },
+            buyerLine: {
+              type: 'line', drawTime: 'beforeDatasetsDraw',
+              yMin: 14, yMax: 14,
+              borderColor: 'rgba(24,95,165,0.4)', borderWidth: 1.5, borderDash: [4, 4]
+            },
+            buyerZone: {
+              type: 'box', drawTime: 'beforeDatasetsDraw',
+              yMin: 0, yMax: 14,
+              backgroundColor: 'rgba(144,202,249,0.2)',
+              borderWidth: 0,
+              label: {
+                display: true, content: "Buyer's Market",
+                position: { x: 'end', y: 'end' },
+                color: 'rgba(24,95,165,0.6)', font: { size: 12, family: 'Lato', weight: '400' },
+                padding: 4, backgroundColor: 'transparent'
+              }
+            }
+          }
         }
       },
       scales: {
-        x: { ticks: { ...TC, autoSkip: true, maxTicksLimit: 14, maxRotation: 45 }, grid: { ...GC } },
+        x: { ticks: { ...TC, autoSkip: true, maxTicksLimit: 14, maxRotation: 45 }, grid: { display: false } },
         y: {
           min: 0, max: 70,
           ticks: { ...TC, callback: v => v + '%' },
-          grid: { color: ctx => {
-            if (ctx.tick.value === 21) return 'rgba(185,74,44,0.3)';
-            if (ctx.tick.value === 14) return 'rgba(24,95,165,0.3)';
-            return 'rgba(0,0,0,0.05)';
-          }}
+          grid: { ...GC }
         }
       }
     }
