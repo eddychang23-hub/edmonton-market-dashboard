@@ -608,7 +608,26 @@ function renderPriceChart(filterOnly) {
     ...(isAnnual ? {} : {})
   }));
 
-  const legItems = visKeys.map(k => `<span><span class="ld" style="background:${PCOLS_SOLID[k]}"></span>${PLBLS[k]}</span>`);
+  const ptIdxMap2 = { Detached:2, SemiDetached:3, Townhouse:4, Apartment:5 };
+  const latPT = _ptRows[_ptRows.length - 1];
+  const prevPT = _ptRows.length > 1 ? _ptRows[_ptRows.length - 2] : null;
+  const legItems = visKeys.map(k => {
+    const cur = latPT ? latPT[ptIdxMap2[k]] : null;
+    const prev = prevPT ? prevPT[ptIdxMap2[k]] : null;
+    let priceHtml = '';
+    if (cur != null) {
+      const pStr = '$' + Math.round(cur / 1000) + 'K';
+      let deltaHtml = '';
+      if (prev != null && prev > 0) {
+        const pct = ((cur - prev) / prev * 100);
+        const sign = pct >= 0 ? '+' : '';
+        const cls = pct >= 0 ? 'up' : 'dn';
+        deltaHtml = `<span class="${cls}" style="font-size:.75rem"> ${sign}${pct.toFixed(1)}%</span>`;
+      }
+      priceHtml = `<div style="font-size:.8rem;color:var(--text-mid);line-height:1.3">${pStr}${deltaHtml}</div>`;
+    }
+    return `<span style="display:inline-flex;align-items:flex-start;gap:5px"><span class="ld" style="background:${PCOLS_SOLID[k]};margin-top:4px"></span><div>${PLBLS[k]}${priceHtml}</div></span>`;
+  });
   document.getElementById('leg-price').innerHTML = legItems.join('');
 
   // If only the property filter changed and chart type hasn't changed, update in place
