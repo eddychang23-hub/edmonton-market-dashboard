@@ -161,7 +161,7 @@ select:focus { border-color: var(--blue); }
     <div class="chart-header">
       <div>
         <div class="chart-title">Average Sold Price by Property Type</div>
-        <div class="chart-sub">Track how prices have moved over time for each home type</div>
+        <div class="chart-sub">Track how prices have moved over time for each home type.</div>
       </div>
     </div>
     <div class="chart-controls">
@@ -411,7 +411,7 @@ function aggPT(arr) {
 }
 
 const PCOLS = { Detached:'#185FA5', SemiDetached:'#0F6E56', Townhouse:'#854F0B', Apartment:'#722444' };
-const PLBLS = { Detached:'Detached', SemiDetached:'Semi-detached', Townhouse:'Townhouse', Apartment:'Apartment' };
+const PLBLS = { Detached:'Detached', SemiDetached:'Semi-Detached', Townhouse:'Townhouse', Apartment:'Apartment' };
 
 // ── STATE ────────────────────────────────────────────────────────────────────
 let region = 'city', propKey = 'all';
@@ -622,7 +622,7 @@ function renderPriceChart(filterOnly) {
         const pct = ((cur - prev) / prev * 100);
         const arrow = pct >= 0 ? '▲' : '▼';
         const cls = pct >= 0 ? 'up' : 'dn';
-        deltaHtml = `&nbsp;<span class="${cls}">${arrow}&nbsp;${Math.abs(pct).toFixed(1)}%</span>`;
+        deltaHtml = `&nbsp;&nbsp;<span class="${cls}">${arrow}&nbsp;${Math.abs(pct).toFixed(1)}%</span>`;
       }
       priceHtml = `<div style="font-size:.75rem;color:var(--text-mid);white-space:nowrap">${pStr}${deltaHtml}</div>`;
     }
