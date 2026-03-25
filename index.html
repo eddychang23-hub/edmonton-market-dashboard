@@ -624,7 +624,7 @@ function renderPriceChart(filterOnly) {
         const cls = pct >= 0 ? 'up' : 'dn';
         deltaHtml = ` <span class="${cls}" style="font-size:.7rem">${arrow} ${Math.abs(pct).toFixed(1)}%</span>`;
       }
-      priceHtml = `<div style="font-size:.8rem;color:var(--text-mid);line-height:1.3">${pStr}${deltaHtml}</div>`;
+      priceHtml = `<div style="font-size:.8rem;color:var(--text-mid);line-height:1.3;white-space:nowrap">${pStr}${deltaHtml}</div>`;
     }
     return `<span style="display:inline-flex;align-items:flex-start;gap:5px"><span class="ld" style="background:${PCOLS_SOLID[k]};margin-top:4px"></span><div>${PLBLS[k]}${priceHtml}</div></span>`;
   });
