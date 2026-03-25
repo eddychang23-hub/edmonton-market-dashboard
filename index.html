@@ -766,7 +766,7 @@ function render() {
         x: { ticks: { ...TC, autoSkip: true, maxTicksLimit: isMobile ? 6 : 14, maxRotation: 45 }, grid: { display: false } },
         y: {
           min: 0, max: 70,
-          ticks: { ...TC, callback: v => isMobile ? v : v + '%', stepSize: isMobile ? 20 : undefined },
+          ticks: { ...TC, callback: v => v + '%', stepSize: isMobile ? 20 : undefined },
           grid: { ...GC }
         }
       }
