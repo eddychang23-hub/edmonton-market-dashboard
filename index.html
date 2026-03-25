@@ -662,8 +662,15 @@ function render() {
 
   renderPriceChart();
 
-  // Absorption history chart
-  const absVals = absRows.map(r => calcAbs(r[3], r[4]));
+  // Absorption history chart — thin data on mobile
+  const isMobile = window.innerWidth < 500;
+  let absChartRows = absRows;
+  if (isMobile && _mode !== 'annual') {
+    // Show every 3rd month on mobile (quarterly), always keep the last point
+    absChartRows = absRows.filter((r, i) => i % 3 === 0 || i === absRows.length - 1);
+  }
+  const absChartLabels = _mode === 'annual' ? absChartRows.map(r => String(r[1])) : absChartRows.map(r => rowLabel(r));
+  const absVals = absChartRows.map(r => calcAbs(r[3], r[4]));
   const zoneColor = v => v > 21 ? 'rgba(185,74,44,0.85)' : v >= 14 ? 'rgba(180,130,0,0.85)' : 'rgba(24,95,165,0.85)';
   const segColors = absVals.map(v => zoneColor(v));
 
@@ -671,7 +678,7 @@ function render() {
   absChart = new Chart(document.getElementById('absChart'), {
     type: 'line',
     data: {
-      labels: absLabels,
+      labels: absChartLabels,
       datasets: [{
         label: '% of homes sold',
         data: absVals,
@@ -681,11 +688,11 @@ function render() {
         borderColor: segColors,
         backgroundColor: 'transparent',
         fill: false, tension: .35,
-        pointRadius: 3.5,
+        pointRadius: isMobile ? 2.5 : 3.5,
         pointBackgroundColor: segColors,
         pointBorderColor: segColors,
         pointBorderWidth: 0,
-        borderWidth: 2.5
+        borderWidth: isMobile ? 2 : 2.5
       }]
     },
     options: {
@@ -756,10 +763,10 @@ function render() {
       },
       layout: { padding: { right: 10 } },
       scales: {
-        x: { ticks: { ...TC, autoSkip: true, maxTicksLimit: 14, maxRotation: 45 }, grid: { display: false } },
+        x: { ticks: { ...TC, autoSkip: true, maxTicksLimit: isMobile ? 6 : 14, maxRotation: 45 }, grid: { display: false } },
         y: {
           min: 0, max: 70,
-          ticks: { ...TC, callback: v => v + '%' },
+          ticks: { ...TC, callback: v => isMobile ? v : v + '%', stepSize: isMobile ? 20 : undefined },
           grid: { ...GC }
         }
       }
