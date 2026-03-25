@@ -121,11 +121,22 @@ select:focus { border-color: var(--blue); }
 
 /* ── Responsive ── */
 @media (max-width: 500px) {
-  .chart-scroll { overflow-x: scroll; -webkit-overflow-scrolling: touch; }
-  .chart-scroll::-webkit-scrollbar { height: 6px; }
-  .chart-scroll::-webkit-scrollbar-track { background: var(--border); border-radius: 3px; }
-  .chart-scroll::-webkit-scrollbar-thumb { background: var(--text-soft); border-radius: 3px; }
+  .chart-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; position: relative; }
   .chart-scroll .chart-wrap { min-width: 700px; }
+  .chart-scroll::after {
+    content: '';
+    position: sticky;
+    right: 0;
+    top: 0;
+    display: block;
+    width: 40px;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.9));
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
   .gauge-card { flex-direction: column; }
   .gauge-right { width: 100%; }
   .main { padding: 0.75rem 0 0; }
