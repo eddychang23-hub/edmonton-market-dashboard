@@ -573,7 +573,14 @@ const GC = { color: 'rgba(0,0,0,0.05)' };
 // Cached data shared between render and renderPriceChart
 let _absF, _ptF, _ptRows, _ptLabels, _mode;
 
-function renderPriceChart() {
+const PCOLS_SOLID = {
+  Detached: '#185FA5',
+  SemiDetached: '#0F6E56',
+  Townhouse: '#BA7517',
+  Apartment: '#993556'
+};
+
+function renderPriceChart(filterOnly) {
   buildMetrics(_absF, _ptF, propKey);
 
   // Price chart — stacked bar for annual, line for monthly
@@ -581,13 +588,6 @@ function renderPriceChart() {
   const ptIdxMap = { Detached:2, SemiDetached:3, Townhouse:4, Apartment:5 };
   const visKeys = propKey === 'all' ? allKeys : [propKey];
   const isAnnual = _mode === 'annual';
-
-  const PCOLS_SOLID = {
-    Detached: '#185FA5',
-    SemiDetached: '#0F6E56',
-    Townhouse: '#BA7517',
-    Apartment: '#993556'
-  };
 
   const datasets = visKeys.map(k => ({
     label: PLBLS[k],
@@ -601,6 +601,14 @@ function renderPriceChart() {
 
   const legItems = visKeys.map(k => `<span><span class="ld" style="background:${PCOLS_SOLID[k]}"></span>${PLBLS[k]}</span>`);
   document.getElementById('leg-price').innerHTML = legItems.join('');
+
+  // If only the property filter changed and chart type hasn't changed, update in place
+  if (filterOnly && priceChart && priceChart.config.type === (isAnnual ? 'bar' : 'line')) {
+    priceChart.data.labels = _ptLabels;
+    priceChart.data.datasets = datasets;
+    priceChart.update();
+    return;
+  }
 
   if (priceChart) priceChart.destroy();
   priceChart = new Chart(document.getElementById('priceChart'), {
@@ -787,7 +795,7 @@ document.getElementById('propFilters').addEventListener('click', e => {
   if (!btn) return;
   propKey = btn.dataset.k;
   document.querySelectorAll('.pb').forEach(b => b.classList.toggle('on', b.dataset.k === propKey));
-  renderPriceChart();
+  renderPriceChart(true);
 });
 
 render();
