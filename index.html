@@ -116,8 +116,12 @@ select:focus { border-color: var(--blue); }
 /* ── Source note ── */
 .source-note { text-align: center; font-size: var(--fs-small); color: var(--text-soft); padding: 1rem 2rem 2rem; }
 
+/* ── Scrollable chart wrapper ── */
+.chart-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
 /* ── Responsive ── */
 @media (max-width: 500px) {
+  .chart-scroll .chart-wrap { min-width: 700px; }
   .gauge-card { flex-direction: column; }
   .gauge-right { width: 100%; }
   .main { padding: 0.75rem 0 0; }
@@ -194,7 +198,7 @@ select:focus { border-color: var(--blue); }
       <span><span class="ld" style="background:#c88a00"></span>Balanced market (14–21%)</span>
       <span><span class="ld" style="background:#b94a2c"></span>Seller's market (&gt;21%)</span>
     </div>
-    <div class="chart-wrap" style="height:260px"><canvas id="absChart"></canvas></div>
+    <div class="chart-scroll"><div class="chart-wrap" style="height:260px"><canvas id="absChart"></canvas></div></div>
   </div>
 
   <div id="metrics"></div>
@@ -662,15 +666,8 @@ function render() {
 
   renderPriceChart();
 
-  // Absorption history chart — thin data on mobile
-  const isMobile = window.innerWidth < 500;
-  let absChartRows = absRows;
-  if (isMobile && _mode !== 'annual') {
-    // Show every 3rd month on mobile (quarterly), always keep the last point
-    absChartRows = absRows.filter((r, i) => i % 3 === 0 || i === absRows.length - 1);
-  }
-  const absChartLabels = _mode === 'annual' ? absChartRows.map(r => String(r[1])) : absChartRows.map(r => rowLabel(r));
-  const absVals = absChartRows.map(r => calcAbs(r[3], r[4]));
+  // Absorption history chart
+  const absVals = absRows.map(r => calcAbs(r[3], r[4]));
   const zoneColor = v => v > 21 ? 'rgba(185,74,44,0.85)' : v >= 14 ? 'rgba(180,130,0,0.85)' : 'rgba(24,95,165,0.85)';
   const segColors = absVals.map(v => zoneColor(v));
 
@@ -678,7 +675,7 @@ function render() {
   absChart = new Chart(document.getElementById('absChart'), {
     type: 'line',
     data: {
-      labels: absChartLabels,
+      labels: absLabels,
       datasets: [{
         label: '% of homes sold',
         data: absVals,
@@ -688,11 +685,11 @@ function render() {
         borderColor: segColors,
         backgroundColor: 'transparent',
         fill: false, tension: .35,
-        pointRadius: isMobile ? 2.5 : 3.5,
+        pointRadius: 3.5,
         pointBackgroundColor: segColors,
         pointBorderColor: segColors,
         pointBorderWidth: 0,
-        borderWidth: isMobile ? 2 : 2.5
+        borderWidth: 2.5
       }]
     },
     options: {
@@ -763,10 +760,10 @@ function render() {
       },
       layout: { padding: { right: 10 } },
       scales: {
-        x: { ticks: { ...TC, autoSkip: true, maxTicksLimit: isMobile ? 6 : 14, maxRotation: 45 }, grid: { display: false } },
+        x: { ticks: { ...TC, autoSkip: true, maxTicksLimit: 14, maxRotation: 45 }, grid: { display: false } },
         y: {
           min: 0, max: 70,
-          ticks: { ...TC, callback: v => v + '%', stepSize: isMobile ? 20 : undefined },
+          ticks: { ...TC, callback: v => v + '%' },
           grid: { ...GC }
         }
       }
