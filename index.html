@@ -778,6 +778,31 @@ function render() {
   const soldVals = absRows.map(r => r[3]);
 }
 
+// ── DISMISS TOOLTIPS ON TAP AWAY ─────────────────────────────────────────
+document.addEventListener('click', e => {
+  [priceChart, absChart].forEach(ch => {
+    if (!ch) return;
+    if (!ch.canvas.contains(e.target)) {
+      ch.tooltip.setActiveElements([], {x:0,y:0});
+      ch.setActiveElements([]);
+      ch.update('none');
+    }
+  });
+});
+// Also dismiss when tapping the same chart canvas but not hitting a point
+['priceChart','absChart'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', function(e) {
+    const chart = id === 'priceChart' ? priceChart : absChart;
+    if (!chart) return;
+    const points = chart.getElementsAtEventForMode(e, 'index', { intersect: false }, false);
+    if (!points.length) {
+      chart.tooltip.setActiveElements([], {x:0,y:0});
+      chart.setActiveElements([]);
+      chart.update('none');
+    }
+  });
+});
+
 // ── EVENT LISTENERS ──────────────────────────────────────────────────────────
 document.getElementById('btnCity').addEventListener('click', () => {
   region = 'city';
