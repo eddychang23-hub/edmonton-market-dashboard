@@ -116,11 +116,12 @@ select:focus { border-color: var(--blue); }
 /* ── Source note ── */
 .source-note { text-align: center; font-size: var(--fs-small); color: var(--text-soft); padding: 1rem 2rem 2rem; }
 
-/* ── Scrollable chart wrapper ── */
-.chart-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* ── Scrollable chart wrapper (mobile only) ── */
+.chart-scroll { overflow-x: visible; }
 
 /* ── Responsive ── */
 @media (max-width: 500px) {
+  .chart-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .chart-scroll .chart-wrap { min-width: 700px; }
   .gauge-card { flex-direction: column; }
   .gauge-right { width: 100%; }
