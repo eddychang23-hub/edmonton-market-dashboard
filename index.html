@@ -607,7 +607,7 @@ function buildMetrics(absF, ptF, pk) {
   const latSnap = ptSourceAll[ptSourceAll.length - 1];
   const prevSnap = ptSourceAll.length > 1 ? ptSourceAll[ptSourceAll.length - 2] : null;
   const snapTypes = [
-    { key: 'Detached', idx: 2, label: 'Detached',
+    { key: 'Detached', idx: 2, label: 'Detached Single Family',
       icon: `<svg viewBox="0 0 32 32">
         <path d="M16 4L3 15h4v13h18V15h4L16 4z"/>
         <rect x="10" y="17" width="4" height="4" rx=".5"/>
@@ -657,7 +657,7 @@ function buildMetrics(absF, ptF, pk) {
     const pct = ((cur - prev) / prev * 100);
     const cls = pct >= 0 ? 'up' : 'dn';
     const arrow = pct >= 0 ? '▲' : '▼';
-    return `<div class="snapshot-item-delta ${cls}">${arrow} ${Math.abs(pct).toFixed(1)}% (M.O.M.)</div>`;
+    return `<div class="snapshot-item-delta ${cls}">${arrow} ${Math.abs(pct).toFixed(1)}%</div>`;
   }
 
   const allPrice = lat[2];
@@ -678,10 +678,12 @@ function buildMetrics(absF, ptF, pk) {
 
   document.getElementById('priceSnapshot').innerHTML = `
     <div class="snapshot-card">
+      <div class="chart-title">Average Sold Price by Property Type</div>
+      <div class="chart-sub">Compared to last month.</div>
       <div class="snapshot-header">
-        <div class="snapshot-title">Average Sold Price</div>
+        <div class="snapshot-item-label">All Property Types</div>
         <div class="snapshot-value">$${Math.round(allPrice/1000)}K</div>
-        <div class="snapshot-item-delta ${allCls}">${allArrow} ${Math.abs(allPct).toFixed(1)}% (M.O.M.)</div>
+        <div class="snapshot-item-delta ${allCls}">${allArrow} ${Math.abs(allPct).toFixed(1)}%</div>
       </div>
       <div class="snapshot-grid">${snapItems}</div>
     </div>`;
