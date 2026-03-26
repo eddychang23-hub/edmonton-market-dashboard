@@ -671,19 +671,17 @@ function buildMetrics(absF, ptF, pk) {
     const prv = prevSnap ? prevSnap[t.idx] : 0;
     return `<div class="snapshot-item">
       <div class="snapshot-item-label">${t.label}</div>
-      <div class="snapshot-item-price">$${Math.round(cur/1000)}K</div>
-      ${snapDelta(cur, prv)}
+      <div style="display:flex;align-items:baseline;gap:6px"><div class="snapshot-item-price">$${Math.round(cur/1000)}K</div>${snapDelta(cur, prv)}</div>
     </div>`;
   }).join('');
 
   document.getElementById('priceSnapshot').innerHTML = `
     <div class="snapshot-card">
       <div class="chart-title">Average Sold Price by Property Type</div>
-      <div class="chart-sub">Compared to last month.</div>
+      <div class="chart-sub">% changes are month over month.</div>
       <div class="snapshot-header">
         <div class="snapshot-item-label">All Property Types</div>
-        <div class="snapshot-value">$${Math.round(allPrice/1000)}K</div>
-        <div class="snapshot-item-delta ${allCls}">${allArrow} ${Math.abs(allPct).toFixed(1)}%</div>
+        <div style="display:flex;align-items:baseline;gap:8px"><div class="snapshot-value">$${Math.round(allPrice/1000)}K</div><div class="snapshot-item-delta ${allCls}">${allArrow} ${Math.abs(allPct).toFixed(1)}%</div></div>
       </div>
       <div class="snapshot-grid">${snapItems}</div>
     </div>`;
