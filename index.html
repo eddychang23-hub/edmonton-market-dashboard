@@ -113,6 +113,19 @@ select:focus { border-color: var(--blue); }
 .vtb { padding: 5px 14px; border-radius: 50px; border: none; font-family: 'Lato', sans-serif; font-size: .8rem; font-weight: var(--fw-body); cursor: pointer; color: var(--text-soft); background: transparent; transition: all .2s; white-space: nowrap; }
 .vtb.active { background: var(--white); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
+/* ── Price snapshot ── */
+.snapshot-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.5rem; margin-bottom: 1.25rem; }
+.snapshot-header { margin-bottom: 1.25rem; }
+.snapshot-title { font-size: var(--fs-label); font-weight: var(--fw-label); text-transform: uppercase; letter-spacing: var(--ls-label); color: var(--text-soft); margin-bottom: 4px; }
+.snapshot-value { font-size: var(--fs-value); font-weight: var(--fw-value); color: var(--text); line-height: 1; margin-bottom: 4px; }
+.snapshot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.snapshot-item { text-align: left; }
+.snapshot-item-icon { margin-bottom: 6px; }
+.snapshot-item-icon svg { width: 28px; height: 28px; stroke: var(--text-mid); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.snapshot-item-label { font-size: var(--fs-body); font-weight: var(--fw-body); color: var(--text); margin-bottom: 4px; }
+.snapshot-item-price { font-size: var(--fs-value); font-weight: var(--fw-value); color: var(--text); line-height: 1; margin-bottom: 4px; }
+.snapshot-item-delta { font-size: var(--fs-delta); font-weight: var(--fw-delta); }
+
 /* ── Chart cards ── */
 .chart-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.5rem; margin-bottom: 1.25rem; }
 .chart-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: .4rem; }
@@ -138,6 +151,8 @@ select:focus { border-color: var(--blue); }
   .scroll-hint { display: block; text-align: center; font-size: .75rem; color: var(--text-soft); padding: 6px 0 0; }
   .gauge-card { flex-direction: column; }
   .gauge-right { width: 100%; }
+  .snapshot-grid { grid-template-columns: repeat(2, 1fr); }
+  .snapshot-item-price { font-size: 1.4rem; }
   .main { padding: 0.75rem 0 0; }
   .header { padding: 1rem 0.75rem; }
   .header-left h1 { font-size: 1.2rem; }
@@ -168,18 +183,13 @@ select:focus { border-color: var(--blue); }
 
   <div id="gauge"></div>
 
+  <div id="priceSnapshot"></div>
+
   <div class="chart-card">
     <div class="chart-header">
       <div>
         <div class="chart-title">Average Sold Price by Property Type</div>
         <div class="chart-sub">Track how prices have moved over time for each home type.</div>
-      </div>
-    </div>
-    <div class="price-stat" style="border-bottom:none;padding-top:0;padding-bottom:0;margin-bottom:.75rem">
-      <div>
-        <div class="price-stat-label" id="priceStatLabel">Avg sold price (all)</div>
-        <div class="price-stat-value" id="priceStatValue">—</div>
-        <div class="price-stat-delta" id="priceStatDelta"></div>
       </div>
     </div>
     <div class="prop-filters" id="propFilters" style="margin-bottom:.75rem">
@@ -550,13 +560,6 @@ function buildMetrics(absF, ptF, pk) {
     return `<div class="mc-delta ${cl}">${up?'▲':'▼'} ${txt}</div>`;
   }
 
-  // Update price stat block
-  document.getElementById('priceStatLabel').textContent = pLbl;
-  document.getElementById('priceStatValue').textContent = '$'+Math.round(price/1000)+'K';
-  const pdUp = pd>0;
-  document.getElementById('priceStatDelta').innerHTML =
-    `<span class="${pdUp?'up':'dn'}">${pdUp?'▲':'▼'} ${Math.abs(pd).toFixed(1)}% compared to last month</span>`;
-
   const invPct = prev ? ((inv - prev[4]) / prev[4] * 100) : 0;
 
   // New listings — match by year filter
@@ -597,6 +600,56 @@ function buildMetrics(absF, ptF, pk) {
           <div style="font-size:calc(var(--fs-delta) * 0.75)">${dh(absDelta, true)}</div>
         </div>
       </div>
+    </div>`;
+
+  // ── Price Snapshot (always month-over-month, all property types) ──
+  const ptSourceAll = region === 'city' ? CITY_PT : GEA_PT;
+  const latSnap = ptSourceAll[ptSourceAll.length - 1];
+  const prevSnap = ptSourceAll.length > 1 ? ptSourceAll[ptSourceAll.length - 2] : null;
+  const snapTypes = [
+    { key: 'Detached', idx: 2, label: 'Detached',
+      icon: `<svg viewBox="0 0 32 32"><path d="M4 16L16 5l12 11"/><path d="M7 17v10h18V17"/><rect x="13" y="21" width="6" height="6"/></svg>` },
+    { key: 'SemiDetached', idx: 3, label: 'Semi-Detached',
+      icon: `<svg viewBox="0 0 32 32"><path d="M2 17L9 10l7 7"/><path d="M16 17l7-7 7 7"/><path d="M5 18v9h11V18"/><path d="M16 18v9h11V18"/><line x1="16" y1="10" x2="16" y2="27"/></svg>` },
+    { key: 'Townhouse', idx: 4, label: 'Townhouse',
+      icon: `<svg viewBox="0 0 32 32"><path d="M1 17l5-6 5 6"/><path d="M11 17l5-6 5 6"/><path d="M21 17l5-6 5 6"/><path d="M4 18v9h7V18"/><path d="M14 18v9h7V18"/><path d="M24 18v9h4V18"/><line x1="11" y1="11" x2="11" y2="27"/><line x1="21" y1="11" x2="21" y2="27"/></svg>` },
+    { key: 'Apartment', idx: 5, label: 'Apartment',
+      icon: `<svg viewBox="0 0 32 32"><rect x="6" y="4" width="20" height="24" rx="1"/><rect x="10" y="8" width="4" height="3"/><rect x="18" y="8" width="4" height="3"/><rect x="10" y="14" width="4" height="3"/><rect x="18" y="14" width="4" height="3"/><rect x="13" y="22" width="6" height="6"/></svg>` }
+  ];
+
+  function snapDelta(cur, prev) {
+    if (!prev || prev === 0) return '';
+    const pct = ((cur - prev) / prev * 100);
+    const cls = pct >= 0 ? 'up' : 'dn';
+    const arrow = pct >= 0 ? '▲' : '▼';
+    return `<div class="snapshot-item-delta ${cls}">${arrow} ${Math.abs(pct).toFixed(1)}%</div>`;
+  }
+
+  const allPrice = lat[2];
+  const allPrev = prev ? prev[2] : allPrice;
+  const allPct = ((allPrice - allPrev) / allPrev * 100);
+  const allCls = allPct >= 0 ? 'up' : 'dn';
+  const allArrow = allPct >= 0 ? '▲' : '▼';
+
+  const snapItems = snapTypes.map(t => {
+    const cur = latSnap ? latSnap[t.idx] : 0;
+    const prv = prevSnap ? prevSnap[t.idx] : 0;
+    return `<div class="snapshot-item">
+      <div class="snapshot-item-icon">${t.icon}</div>
+      <div class="snapshot-item-label">${t.label}</div>
+      <div class="snapshot-item-price">$${Math.round(cur/1000)}K</div>
+      ${snapDelta(cur, prv)}
+    </div>`;
+  }).join('');
+
+  document.getElementById('priceSnapshot').innerHTML = `
+    <div class="snapshot-card">
+      <div class="snapshot-header">
+        <div class="snapshot-title">Average Sold Price</div>
+        <div class="snapshot-value">$${Math.round(allPrice/1000)}K</div>
+        <div class="snapshot-item-delta ${allCls}">${allArrow} ${Math.abs(allPct).toFixed(1)}% compared to last month</div>
+      </div>
+      <div class="snapshot-grid">${snapItems}</div>
     </div>`;
 
   document.getElementById('metrics').innerHTML = `
