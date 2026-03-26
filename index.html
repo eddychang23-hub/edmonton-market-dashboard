@@ -115,15 +115,13 @@ select:focus { border-color: var(--blue); }
 
 /* ── Price snapshot ── */
 .snapshot-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.5rem; margin-bottom: 1.25rem; }
-.snapshot-header { margin-bottom: 1.25rem; }
-.snapshot-title { font-size: var(--fs-label); font-weight: var(--fw-label); text-transform: uppercase; letter-spacing: var(--ls-label); color: var(--text-soft); margin-bottom: 4px; }
-.snapshot-value { font-size: var(--fs-value); font-weight: var(--fw-value); color: var(--text); line-height: 1; margin-bottom: 4px; }
-.snapshot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.snapshot-value { font-size: 1.4rem; font-weight: var(--fw-value); color: var(--text); line-height: 1; }
+.snapshot-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
 .snapshot-item { text-align: left; }
 .snapshot-item-icon { margin-bottom: 6px; }
 .snapshot-item-icon svg { width: 28px; height: 28px; stroke: var(--text-mid); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .snapshot-item-label { font-size: var(--fs-body); font-weight: var(--fw-body); color: var(--text); margin-bottom: 4px; }
-.snapshot-item-price { font-size: var(--fs-value); font-weight: var(--fw-value); color: var(--text); line-height: 1; margin-bottom: 4px; }
+.snapshot-item-price { font-size: 1.4rem; font-weight: var(--fw-value); color: var(--text); line-height: 1; }
 .snapshot-item-delta { font-size: var(--fs-delta); font-weight: var(--fw-delta); }
 
 /* ── Chart cards ── */
@@ -679,11 +677,13 @@ function buildMetrics(absF, ptF, pk) {
     <div class="snapshot-card">
       <div class="chart-title">Average Sold Price by Property Type</div>
       <div class="chart-sub">% changes are month over month.</div>
-      <div class="snapshot-header">
-        <div class="snapshot-item-label">All Property Types</div>
-        <div style="display:flex;align-items:baseline;gap:8px"><div class="snapshot-value">$${Math.round(allPrice/1000)}K</div><div class="snapshot-item-delta ${allCls}">${allArrow} ${Math.abs(allPct).toFixed(1)}%</div></div>
+      <div class="snapshot-grid">
+        <div class="snapshot-item">
+          <div class="snapshot-item-label">All Property Types</div>
+          <div style="display:flex;align-items:baseline;gap:6px"><div class="snapshot-item-price">$${Math.round(allPrice/1000)}K</div><div class="snapshot-item-delta ${allCls}">${allArrow} ${Math.abs(allPct).toFixed(1)}%</div></div>
+        </div>
+        ${snapItems}
       </div>
-      <div class="snapshot-grid">${snapItems}</div>
     </div>`;
 
   document.getElementById('metrics').innerHTML = `
