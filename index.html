@@ -215,7 +215,7 @@ select:focus { border-color: var(--blue); }
     </div>
     <div class="legend" id="leg-price"></div>
     <div class="chart-wrap" style="height:300px"><canvas id="priceChart"></canvas></div>
-    <div id="dataHint" style="font-size:.7rem;color:var(--text-soft);margin-top:.5rem">Data available since January 2020.</div>
+    <div id="dataHint" style="font-size:.7rem;color:var(--text-soft);margin-top:.5rem;display:none">Data available since January 2020.</div>
   </div>
 
   <div class="chart-card">
@@ -242,6 +242,7 @@ select:focus { border-color: var(--blue); }
       <span><span class="ld" style="background:#b94a2c"></span>Seller's market (&gt;21%)</span>
     </div>
     <div class="chart-wrap" style="height:260px"><canvas id="absChart"></canvas></div>
+    <div id="absDataHint" style="font-size:.7rem;color:var(--text-soft);margin-top:.5rem;display:none">Data available since January 2020.</div>
   </div>
 
 
@@ -966,7 +967,7 @@ document.getElementById('timeFilters').addEventListener('click', e => {
   if (tb) {
     timeRange = tb.dataset.t;
     document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.t === timeRange));
-    document.getElementById('dataHint').style.display = timeRange === 'max' ? 'none' : '';
+    document.getElementById('dataHint').style.display = timeRange === 'max' ? '' : 'none';
     renderPriceChartFull();
     return;
   }
@@ -978,6 +979,7 @@ document.getElementById('absTimeFilters').addEventListener('click', e => {
   if (!btn) return;
   absTimeRange = btn.dataset.t;
   document.querySelectorAll('.atb').forEach(b => b.classList.toggle('on', b.dataset.t === absTimeRange));
+  document.getElementById('absDataHint').style.display = absTimeRange === 'max' ? '' : 'none';
   renderAbsChart();
 });
 
