@@ -740,7 +740,7 @@ function renderPriceChart(filterOnly) {
     label: PLBLS[k],
     data: _ptRows.map(r => r[ptIdxMap[k]]),
     borderColor: isAnnual ? 'rgba(255,255,255,0.4)' : PCOLS_SOLID[k],
-    backgroundColor: isAnnual ? PCOLS_SOLID[k] : 'transparent',
+    backgroundColor: PCOLS_SOLID[k],
     borderWidth: isAnnual ? 1 : 2,
     tension: .35, pointRadius: 0,
     ...(isAnnual ? {} : {})
@@ -785,7 +785,7 @@ function renderPriceChart(filterOnly) {
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: c => ' ' + c.dataset.label + ': $' + c.parsed.y.toLocaleString() } }
+        tooltip: { boxWidth: 12, boxHeight: 12, boxPadding: 4, callbacks: { label: c => ' ' + c.dataset.label + ': $' + c.parsed.y.toLocaleString() } }
       },
       scales: {
         x: {
