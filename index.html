@@ -138,15 +138,9 @@ select:focus { border-color: var(--blue); }
 /* ── Source note ── */
 .source-note { text-align: center; font-size: var(--fs-small); color: var(--text-soft); padding: 1rem 2rem 2rem; }
 
-/* ── Scrollable chart wrapper (mobile only) ── */
-.chart-scroll { overflow-x: visible; }
-.scroll-hint { display: none; }
 
 /* ── Responsive ── */
 @media (max-width: 500px) {
-  .chart-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .chart-scroll .chart-wrap { min-width: 700px; }
-  .scroll-hint { display: block; text-align: center; font-size: .75rem; color: var(--text-soft); padding: 6px 0 0; }
   .gauge-card { flex-direction: column; }
   .gauge-right { width: 100%; }
   .snapshot-grid { grid-template-columns: repeat(2, 1fr); }
@@ -199,13 +193,13 @@ select:focus { border-color: var(--blue); }
     </div>
     <div class="time-filters" id="timeFilters" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:.75rem">
       <div class="time-btns">
-        <button class="tb on" data-t="max">Max</button>
+        <button class="tb" data-t="max">Max</button>
         <span class="td"></span>
         <button class="tb" data-t="3y">3Y</button>
         <span class="td"></span>
         <button class="tb" data-t="2y">2Y</button>
         <span class="td"></span>
-        <button class="tb" data-t="1y">1Y</button>
+        <button class="tb on" data-t="1y">1Y</button>
         <span class="td"></span>
         <button class="tb" data-t="6m">6M</button>
         <span class="td"></span>
@@ -219,8 +213,7 @@ select:focus { border-color: var(--blue); }
       </div>
     </div>
     <div class="legend" id="leg-price"></div>
-    <div class="chart-scroll"><div class="chart-wrap" style="height:300px"><canvas id="priceChart"></canvas></div></div>
-    <span class="scroll-hint">Swipe to see more →</span>
+    <div class="chart-wrap" style="height:300px"><canvas id="priceChart"></canvas></div>
     <div style="font-size:.7rem;color:var(--text-soft);margin-top:.5rem">Data available since January 2020.</div>
   </div>
 
@@ -232,8 +225,7 @@ select:focus { border-color: var(--blue); }
       <span><span class="ld" style="background:#c88a00"></span>Balanced market (14–21%)</span>
       <span><span class="ld" style="background:#b94a2c"></span>Seller's market (&gt;21%)</span>
     </div>
-    <div class="chart-scroll"><div class="chart-wrap" style="height:260px"><canvas id="absChart"></canvas></div></div>
-    <span class="scroll-hint">Swipe to see more →</span>
+    <div class="chart-wrap" style="height:260px"><canvas id="absChart"></canvas></div>
   </div>
 
   <div id="metrics"></div>
@@ -450,7 +442,7 @@ let priceChart, absChart, soldChart, nlChart, invChart;
 // ── TIMEFRAME ────────────────────────────────────────────────────────────────
 const MONTH_MAP = {jan:0,january:0,feb:1,february:1,mar:2,march:2,apr:3,april:3,may:4,jun:5,june:5,jul:6,july:6,aug:7,august:7,sep:8,sept:8,september:8,oct:9,october:9,nov:10,november:10,dec:11,december:11};
 function monthIdx(name) { return MONTH_MAP[name.toLowerCase()] ?? 0; }
-let timeRange = 'max';
+let timeRange = '1y';
 let viewMode = 'monthly';
 
 function filterByTimeRange(rows) {
