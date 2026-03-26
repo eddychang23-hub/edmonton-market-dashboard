@@ -657,7 +657,7 @@ function buildMetrics(absF, ptF, pk) {
     const pct = ((cur - prev) / prev * 100);
     const cls = pct >= 0 ? 'up' : 'dn';
     const arrow = pct >= 0 ? '▲' : '▼';
-    return `<div class="snapshot-item-delta ${cls}">${arrow} ${Math.abs(pct).toFixed(1)}%</div>`;
+    return `<div class="snapshot-item-delta ${cls}">${arrow} ${Math.abs(pct).toFixed(1)}% (M.O.M.)</div>`;
   }
 
   const allPrice = lat[2];
@@ -670,7 +670,6 @@ function buildMetrics(absF, ptF, pk) {
     const cur = latSnap ? latSnap[t.idx] : 0;
     const prv = prevSnap ? prevSnap[t.idx] : 0;
     return `<div class="snapshot-item">
-      <div class="snapshot-item-icon">${t.icon}</div>
       <div class="snapshot-item-label">${t.label}</div>
       <div class="snapshot-item-price">$${Math.round(cur/1000)}K</div>
       ${snapDelta(cur, prv)}
@@ -682,7 +681,7 @@ function buildMetrics(absF, ptF, pk) {
       <div class="snapshot-header">
         <div class="snapshot-title">Average Sold Price</div>
         <div class="snapshot-value">$${Math.round(allPrice/1000)}K</div>
-        <div class="snapshot-item-delta ${allCls}">${allArrow} ${Math.abs(allPct).toFixed(1)}% compared to last month</div>
+        <div class="snapshot-item-delta ${allCls}">${allArrow} ${Math.abs(allPct).toFixed(1)}% (M.O.M.)</div>
       </div>
       <div class="snapshot-grid">${snapItems}</div>
     </div>`;
