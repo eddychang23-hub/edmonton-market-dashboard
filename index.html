@@ -102,6 +102,14 @@ select:focus { border-color: var(--blue); }
 .pb[data-k="Townhouse"].on { background: #854F0B; border-color: #854F0B; }
 .pb[data-k="Apartment"].on { background: #722444; border-color: #722444; }
 
+/* ── Timeline buttons ── */
+.tb { padding: 5px 14px; border-radius: 50px; border: 1.5px solid var(--border); background: var(--white); color: var(--text-mid); font-family: 'Lato', sans-serif; font-size: var(--fs-body); font-weight: var(--fw-body); cursor: pointer; transition: all .15s; }
+.tb.on { border-color: var(--navy); background: var(--navy); color: #fff; }
+
+/* ── View toggle (Monthly/Annual) ── */
+.vtb { padding: 5px 14px; border-radius: 50px; border: none; font-family: 'Lato', sans-serif; font-size: .8rem; font-weight: var(--fw-body); cursor: pointer; color: var(--text-soft); background: transparent; transition: all .2s; white-space: nowrap; }
+.vtb.active { background: var(--white); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
 /* ── Chart cards ── */
 .chart-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.5rem; margin-bottom: 1.25rem; }
 .chart-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: .4rem; }
@@ -164,16 +172,28 @@ select:focus { border-color: var(--blue); }
         <div class="chart-sub">Track how prices have moved over time for each home type.</div>
       </div>
     </div>
-    <div class="chart-controls">
-      <label>Year range</label>
-      <select id="yearFrom"></select>
-      <span style="font-size:.8rem;color:var(--text-soft)">to</span>
-      <select id="yearTo"></select>
-      <div class="ctrl-divider"></div>
-      <select id="viewMode">
-        <option value="monthly">Monthly view</option>
-        <option value="annual">Annual averages</option>
-      </select>
+    <div class="prop-filters" id="propFilters" style="margin-bottom:.75rem">
+      <button class="pb on" data-k="all">All Types</button>
+      <button class="pb" data-k="Detached">Detached</button>
+      <button class="pb" data-k="SemiDetached">Semi-Detached</button>
+      <button class="pb" data-k="Townhouse">Townhouse</button>
+      <button class="pb" data-k="Apartment">Apartment</button>
+    </div>
+    <div class="time-filters" id="timeFilters" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:.75rem">
+      <div class="prop-filters">
+        <button class="tb on" data-t="max">Max</button>
+        <button class="tb" data-t="3y">3Y</button>
+        <button class="tb" data-t="2y">2Y</button>
+        <button class="tb" data-t="1y">1Y</button>
+        <button class="tb" data-t="6m">6M</button>
+        <button class="tb" data-t="ytd">YTD</button>
+      </div>
+      <div style="margin-left:auto">
+        <div class="region-toggle" style="padding:2px;gap:1px">
+          <button class="vtb active" data-v="monthly">Monthly</button>
+          <button class="vtb" data-v="annual">Annual</button>
+        </div>
+      </div>
     </div>
     <div class="price-stat">
       <div>
@@ -182,13 +202,7 @@ select:focus { border-color: var(--blue); }
         <div class="price-stat-delta" id="priceStatDelta"></div>
       </div>
     </div>
-    <div class="prop-filters" id="propFilters" style="margin-bottom:1rem">
-      <button class="pb on" data-k="all">All Types</button>
-      <button class="pb" data-k="Detached">Detached</button>
-      <button class="pb" data-k="SemiDetached">Semi-Detached</button>
-      <button class="pb" data-k="Townhouse">Townhouse</button>
-      <button class="pb" data-k="Apartment">Apartment</button>
-    </div>
+    <div style="font-size:.7rem;color:var(--text-soft);margin-bottom:.75rem">Data available since January 2020.</div>
     <div class="legend" id="leg-price"></div>
     <div class="chart-scroll"><div class="chart-wrap" style="height:300px"><canvas id="priceChart"></canvas></div></div>
     <span class="scroll-hint">Swipe to see more →</span>
@@ -417,12 +431,34 @@ const PLBLS = { Detached:'Detached', SemiDetached:'Semi-Detached', Townhouse:'To
 let region = 'city', propKey = 'all';
 let priceChart, absChart, soldChart, nlChart, invChart;
 
-// ── YEAR SELECTS ─────────────────────────────────────────────────────────────
-const allYears = [...new Set(CITY_ABS.map(r => r[1]))].sort();
-const yFromEl = document.getElementById('yearFrom');
-const yToEl = document.getElementById('yearTo');
-allYears.forEach(y => { yFromEl.add(new Option(y, y)); yToEl.add(new Option(y, y)); });
-yFromEl.value = '2020'; yToEl.value = '2026';
+// ── TIMEFRAME ────────────────────────────────────────────────────────────────
+const MONTH_MAP = {jan:0,january:0,feb:1,february:1,mar:2,march:2,apr:3,april:3,may:4,jun:5,june:5,jul:6,july:6,aug:7,august:7,sep:8,sept:8,september:8,oct:9,october:9,nov:10,november:10,dec:11,december:11};
+function monthIdx(name) { return MONTH_MAP[name.toLowerCase()] ?? 0; }
+let timeRange = 'max';
+let viewMode = 'monthly';
+
+function filterByTimeRange(rows) {
+  if (timeRange === 'max') return rows;
+  const last = rows[rows.length - 1];
+  if (!last) return rows;
+  const lastDate = new Date(last[1], monthIdx(last[0]));
+  let cutoff;
+  if (timeRange === 'ytd') {
+    cutoff = new Date(last[1], 0, 1);
+  } else if (timeRange === '6m') {
+    cutoff = new Date(lastDate); cutoff.setMonth(cutoff.getMonth() - 6);
+  } else if (timeRange === '1y') {
+    cutoff = new Date(lastDate); cutoff.setFullYear(cutoff.getFullYear() - 1);
+  } else if (timeRange === '2y') {
+    cutoff = new Date(lastDate); cutoff.setFullYear(cutoff.getFullYear() - 2);
+  } else if (timeRange === '3y') {
+    cutoff = new Date(lastDate); cutoff.setFullYear(cutoff.getFullYear() - 3);
+  }
+  return rows.filter(r => {
+    const d = new Date(r[1], monthIdx(r[0]));
+    return d >= cutoff;
+  });
+}
 
 // ── GAUGE ────────────────────────────────────────────────────────────────────
 function buildGaugeSVG(absVal) {
@@ -666,14 +702,13 @@ function renderPriceChart(filterOnly) {
 }
 
 function render() {
-  const yf = +yFromEl.value, yt = +yToEl.value;
-  _mode = document.getElementById('viewMode').value;
+  _mode = viewMode;
 
   const absSource = region === 'city' ? CITY_ABS : GEA_ABS;
   const ptSource = region === 'city' ? CITY_PT : GEA_PT;
 
-  _absF = filterY(absSource, yf, yt);
-  _ptF = filterY(ptSource, yf, yt);
+  _absF = filterByTimeRange(absSource);
+  _ptF = filterByTimeRange(ptSource);
 
   let absRows, absLabels;
   if (_mode === 'annual') {
@@ -840,9 +875,22 @@ document.getElementById('btnGEA').addEventListener('click', () => {
   render();
 });
 
-document.getElementById('yearFrom').addEventListener('change', render);
-document.getElementById('yearTo').addEventListener('change', render);
-document.getElementById('viewMode').addEventListener('change', render);
+// Timeline buttons
+document.getElementById('timeFilters').addEventListener('click', e => {
+  const tb = e.target.closest('.tb');
+  if (tb) {
+    timeRange = tb.dataset.t;
+    document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.t === timeRange));
+    render();
+    return;
+  }
+  const vtb = e.target.closest('.vtb');
+  if (vtb) {
+    viewMode = vtb.dataset.v;
+    document.querySelectorAll('.vtb').forEach(b => b.classList.toggle('active', b.dataset.v === viewMode));
+    render();
+  }
+});
 
 document.getElementById('propFilters').addEventListener('click', e => {
   const btn = e.target.closest('.pb');
