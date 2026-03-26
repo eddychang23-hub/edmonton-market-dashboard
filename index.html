@@ -109,9 +109,6 @@ select:focus { border-color: var(--blue); }
 .time-btns .tb.on { color: var(--blue); font-weight: 700; background: rgba(24,95,165,0.08); }
 .time-btns .td { width: 1px; height: 14px; background: var(--border); flex-shrink: 0; }
 
-/* ── View toggle (Monthly/Annual) ── */
-.vtb { padding: 5px 14px; border-radius: 50px; border: none; font-family: 'Lato', sans-serif; font-size: .8rem; font-weight: var(--fw-body); cursor: pointer; color: var(--text-soft); background: transparent; transition: all .2s; white-space: nowrap; }
-.vtb.active { background: var(--white); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
 /* ── Price snapshot ── */
 .snapshot-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.5rem; margin-bottom: 1.25rem; }
@@ -208,12 +205,6 @@ select:focus { border-color: var(--blue); }
         <button class="tb" data-t="6m">6M</button>
         <span class="td"></span>
         <button class="tb" data-t="ytd">YTD</button>
-      </div>
-      <div style="margin-left:auto">
-        <div class="region-toggle" style="padding:2px;gap:1px">
-          <button class="vtb active" data-v="monthly">Monthly</button>
-          <button class="vtb" data-v="annual">Annual</button>
-        </div>
       </div>
     </div>
     <div class="legend" id="leg-price"></div>
@@ -974,12 +965,6 @@ document.getElementById('timeFilters').addEventListener('click', e => {
     document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.t === timeRange));
     render();
     return;
-  }
-  const vtb = e.target.closest('.vtb');
-  if (vtb) {
-    viewMode = vtb.dataset.v;
-    document.querySelectorAll('.vtb').forEach(b => b.classList.toggle('active', b.dataset.v === viewMode));
-    render();
   }
 });
 
