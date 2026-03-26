@@ -140,11 +140,14 @@ select:focus { border-color: var(--blue); }
 
 
 /* ── Responsive ── */
+@media (max-width: 768px) {
+  .snapshot-grid { grid-template-columns: repeat(3, 1fr); }
+}
 @media (max-width: 500px) {
   .gauge-card { flex-direction: column; }
   .gauge-right { width: 100%; }
   .snapshot-grid { grid-template-columns: repeat(2, 1fr); }
-  .snapshot-item-price { font-size: 1.4rem; }
+  .snapshot-item-price { font-size: 1.2rem; }
   .main { padding: 0.75rem 0 0; }
   .header { padding: 1rem 0.75rem; }
   .header-left h1 { font-size: 1.2rem; }
