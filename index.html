@@ -104,9 +104,9 @@ select:focus { border-color: var(--blue); }
 
 /* ── Timeline buttons ── */
 .time-btns { display: flex; align-items: center; gap: 0; }
-.time-btns .tb { padding: 6px 10px; border: none; border-radius: 4px; background: transparent; color: var(--text-soft); font-family: 'Lato', sans-serif; font-size: .85rem; font-weight: var(--fw-body); cursor: pointer; transition: all .15s; }
-.time-btns .tb:hover { color: var(--text); }
-.time-btns .tb.on { color: var(--blue); font-weight: 700; background: rgba(24,95,165,0.08); }
+.time-btns .tb, .time-btns .atb { padding: 6px 10px; border: none; border-radius: 4px; background: transparent; color: var(--text-soft); font-family: 'Lato', sans-serif; font-size: .85rem; font-weight: var(--fw-body); cursor: pointer; transition: all .15s; }
+.time-btns .tb:hover, .time-btns .atb:hover { color: var(--text); }
+.time-btns .tb.on, .time-btns .atb.on { color: var(--blue); font-weight: 700; background: rgba(24,95,165,0.08); }
 .time-btns .td { width: 1px; height: 14px; background: var(--border); flex-shrink: 0; }
 
 
@@ -221,6 +221,21 @@ select:focus { border-color: var(--blue); }
   <div class="chart-card">
     <div class="chart-title">Market Conditions</div>
     <div class="chart-sub">See how the market has shifted over time.</div>
+    <div class="time-filters" id="absTimeFilters" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:.75rem">
+      <div class="time-btns">
+        <button class="atb" data-t="max">Max</button>
+        <span class="td"></span>
+        <button class="atb" data-t="3y">3Y</button>
+        <span class="td"></span>
+        <button class="atb" data-t="2y">2Y</button>
+        <span class="td"></span>
+        <button class="atb on" data-t="1y">1Y</button>
+        <span class="td"></span>
+        <button class="atb" data-t="6m">6M</button>
+        <span class="td"></span>
+        <button class="atb" data-t="ytd">YTD</button>
+      </div>
+    </div>
     <div class="legend">
       <span><span class="ld" style="background:#185FA5"></span>Buyer's market (&lt;14%)</span>
       <span><span class="ld" style="background:#c88a00"></span>Balanced market (14–21%)</span>
@@ -443,23 +458,25 @@ let priceChart, absChart, soldChart, nlChart, invChart;
 const MONTH_MAP = {jan:0,january:0,feb:1,february:1,mar:2,march:2,apr:3,april:3,may:4,jun:5,june:5,jul:6,july:6,aug:7,august:7,sep:8,sept:8,september:8,oct:9,october:9,nov:10,november:10,dec:11,december:11};
 function monthIdx(name) { return MONTH_MAP[name.toLowerCase()] ?? 0; }
 let timeRange = '1y';
+let absTimeRange = '1y';
 let viewMode = 'monthly';
 
-function filterByTimeRange(rows) {
-  if (timeRange === 'max') return rows;
+function filterByTimeRange(rows, range) {
+  const tr = range || timeRange;
+  if (tr === 'max') return rows;
   const last = rows[rows.length - 1];
   if (!last) return rows;
   const lastDate = new Date(last[1], monthIdx(last[0]));
   let cutoff;
-  if (timeRange === 'ytd') {
+  if (tr === 'ytd') {
     cutoff = new Date(last[1], 0, 1);
-  } else if (timeRange === '6m') {
+  } else if (tr === '6m') {
     cutoff = new Date(lastDate); cutoff.setMonth(cutoff.getMonth() - 6);
-  } else if (timeRange === '1y') {
+  } else if (tr === '1y') {
     cutoff = new Date(lastDate); cutoff.setFullYear(cutoff.getFullYear() - 1);
-  } else if (timeRange === '2y') {
+  } else if (tr === '2y') {
     cutoff = new Date(lastDate); cutoff.setFullYear(cutoff.getFullYear() - 2);
-  } else if (timeRange === '3y') {
+  } else if (tr === '3y') {
     cutoff = new Date(lastDate); cutoff.setFullYear(cutoff.getFullYear() - 3);
   }
   return rows.filter(r => {
@@ -790,7 +807,7 @@ function render() {
   const absSource = region === 'city' ? CITY_ABS : GEA_ABS;
   const ptSource = region === 'city' ? CITY_PT : GEA_PT;
 
-  _absF = filterByTimeRange(absSource);
+  _absF = filterByTimeRange(absSource, absTimeRange);
   _ptF = filterByTimeRange(ptSource);
 
   let absRows, absLabels;
@@ -950,6 +967,15 @@ document.getElementById('timeFilters').addEventListener('click', e => {
     render();
     return;
   }
+});
+
+// Absorption timeline buttons
+document.getElementById('absTimeFilters').addEventListener('click', e => {
+  const btn = e.target.closest('.atb');
+  if (!btn) return;
+  absTimeRange = btn.dataset.t;
+  document.querySelectorAll('.atb').forEach(b => b.classList.toggle('on', b.dataset.t === absTimeRange));
+  render();
 });
 
 document.getElementById('propFilters').addEventListener('click', e => {
