@@ -223,7 +223,6 @@ select:focus { border-color: var(--blue); }
     <div class="chart-wrap" style="height:260px"><canvas id="absChart"></canvas></div>
   </div>
 
-  <div id="metrics"></div>
 
 </div>
 
@@ -560,25 +559,42 @@ function buildMetrics(absF, ptF, pk) {
         <div class="gauge-card-title">Market Status</div>
         <div class="mc-label" style="margin-bottom:0;margin-top:calc(.4rem - .75rem)">As of March 2026</div>
         <div class="gauge-headline" style="color:${mCol};font-size:1.1rem;font-weight:500;margin-top:2px">Currently a ${mLabel}</div>
-        <div class="gauge-legend">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.45rem .25rem">
-            <div class="gauge-legend-item">
-              <span class="gauge-legend-swatch" style="background:#185FA5"></span>
-              <div><div class="gauge-legend-name">Buyer's Market</div><div class="gauge-legend-range">&lt;14%</div></div>
-            </div>
-            <div class="gauge-legend-item">
-              <span class="gauge-legend-swatch" style="background:#b94a2c"></span>
-              <div><div class="gauge-legend-name">Seller's Market</div><div class="gauge-legend-range">&gt;21%</div></div>
-            </div>
-            <div class="gauge-legend-item">
-              <span class="gauge-legend-swatch" style="background:#c88a00"></span>
-              <div><div class="gauge-legend-name">Balanced Market</div><div class="gauge-legend-range">14&ndash;21%</div></div>
-            </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-top:auto;padding-top:1rem">
+          <div>
+            <div class="mc-label">Homes Sold</div>
+            <div class="mc-value" style="font-size:1.4rem">${sold.toLocaleString()}</div>
+            ${dh(soldPct, true)}
+          </div>
+          <div>
+            <div class="mc-label">New Listings</div>
+            <div class="mc-value" style="font-size:1.4rem">${newListings.toLocaleString()}</div>
+            ${dh(nlPct, true)}
+          </div>
+          <div>
+            <div class="mc-label">Total Inventory</div>
+            <div class="mc-value" style="font-size:1.4rem">${inv.toLocaleString()}</div>
+            ${dh(invPct, true)}
           </div>
         </div>
       </div>
       <div class="gauge-right">
-        <div style="font-size:var(--fs-h2);font-weight:var(--fw-h2);color:var(--text);margin-bottom:1.25rem">Absorption Index</div>
+        <div class="gauge-legend" style="margin-bottom:.75rem">
+          <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
+            <div class="gauge-legend-item">
+              <span class="gauge-legend-swatch" style="background:#185FA5"></span>
+              <div><div class="gauge-legend-name">Buyer's</div><div class="gauge-legend-range">&lt;14%</div></div>
+            </div>
+            <div class="gauge-legend-item">
+              <span class="gauge-legend-swatch" style="background:#c88a00"></span>
+              <div><div class="gauge-legend-name">Balanced</div><div class="gauge-legend-range">14&ndash;21%</div></div>
+            </div>
+            <div class="gauge-legend-item">
+              <span class="gauge-legend-swatch" style="background:#b94a2c"></span>
+              <div><div class="gauge-legend-name">Seller's</div><div class="gauge-legend-range">&gt;21%</div></div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:var(--fs-h2);font-weight:var(--fw-h2);color:var(--text);margin-bottom:.75rem">Absorption Index</div>
         <div style="width:80%">${buildGaugeSVG(absVal)}</div>
         <div class="gauge-readout">
           <div class="gauge-readout-pct">${absVal.toFixed(1)}% Sold</div>
@@ -673,24 +689,6 @@ function buildMetrics(absF, ptF, pk) {
       </div>
     </div>`;
 
-  document.getElementById('metrics').innerHTML = `
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="mc-label">Homes sold</div>
-        <div class="mc-value">${sold.toLocaleString()}</div>
-        ${dh(soldPct, true)}
-      </div>
-      <div class="stat-card">
-        <div class="mc-label">New listings</div>
-        <div class="mc-value">${newListings.toLocaleString()}</div>
-        ${dh(nlPct, true)}
-      </div>
-      <div class="stat-card">
-        <div class="mc-label">Total inventory</div>
-        <div class="mc-value">${inv.toLocaleString()}</div>
-        ${dh(invPct, true)}
-      </div>
-    </div>`;
 }
 
 // ── CHARTS ───────────────────────────────────────────────────────────────────
