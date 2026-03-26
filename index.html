@@ -70,7 +70,7 @@ body { font-family: 'Lato', sans-serif; background: transparent; color: var(--te
 
 /* ── Stats row ── */
 .stats-row { display: flex; flex-direction: row; gap: 1rem; margin-bottom: 1.5rem; }
-.stat-card { flex: 1; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; border-top: 3px solid var(--blue); }
+.stat-card { flex: 1; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; }
 
 /* ── Shared type classes ── */
 .mc-label { font-size: var(--fs-label); font-weight: var(--fw-label); text-transform: uppercase; letter-spacing: var(--ls-label); color: var(--text-soft); margin-bottom: 6px; }
@@ -555,7 +555,7 @@ function buildMetrics(absF, ptF, pk) {
   const nlPct = prevListings > 0 ? ((newListings - prevListings) / prevListings * 100) : 0;
 
   document.getElementById('gauge').innerHTML = `
-    <div class="gauge-card" style="border-top:3px solid ${mCol}">
+    <div class="gauge-card">
       <div class="gauge-left">
         <div class="gauge-card-title">Market Status</div>
         <div class="mc-label" style="margin-bottom:0;margin-top:calc(.4rem - .75rem)">As of March 2026</div>
