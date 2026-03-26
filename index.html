@@ -152,7 +152,8 @@ select:focus { border-color: var(--blue); }
   .stats-row { flex-direction: column; }
   .chart-card { padding: 1rem 0.75rem; }
   .gauge-left { padding: 1rem; }
-  .gauge-left .gauge-stats { grid-template-columns: 1fr 1fr 1fr !important; }
+  .gauge-left .gauge-stats { grid-template-columns: 1fr 1fr 1fr !important; gap: .5rem !important; }
+  .gauge-left .gauge-stats .mc-label { white-space: nowrap; font-size: .7rem; }
 }
 </style>
 </head>
@@ -563,18 +564,15 @@ function buildMetrics(absF, ptF, pk) {
         <div class="gauge-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem 1.5rem;margin-top:1.5rem">
           <div>
             <div class="mc-label">Homes Sold</div>
-            <div class="mc-value" style="font-size:1.6rem">${sold.toLocaleString()}</div>
-            ${dh(soldPct, true)}
+            <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><div class="mc-value" style="font-size:1.6rem">${sold.toLocaleString()}</div>${dh(soldPct, true)}</div>
           </div>
           <div>
             <div class="mc-label">New Listings</div>
-            <div class="mc-value" style="font-size:1.6rem">${newListings.toLocaleString()}</div>
-            ${dh(nlPct, true)}
+            <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><div class="mc-value" style="font-size:1.6rem">${newListings.toLocaleString()}</div>${dh(nlPct, true)}</div>
           </div>
           <div>
-            <div class="mc-label">Total Inventory</div>
-            <div class="mc-value" style="font-size:1.6rem">${inv.toLocaleString()}</div>
-            ${dh(invPct, true)}
+            <div class="mc-label" style="white-space:nowrap">Total Inventory</div>
+            <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><div class="mc-value" style="font-size:1.6rem">${inv.toLocaleString()}</div>${dh(invPct, true)}</div>
           </div>
         </div>
       </div>
