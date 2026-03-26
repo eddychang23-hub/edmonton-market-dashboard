@@ -742,8 +742,6 @@ function renderPriceChart(filterOnly) {
   const ptIdxMap2 = { Detached:2, SemiDetached:3, Townhouse:4, Apartment:5 };
   const latPT = _ptRows[_ptRows.length - 1];
   const firstPT = _ptRows[0] || null;
-  const timeLabels = { max:'since 2020', '3y':'vs 3Y ago', '2y':'vs 2Y ago', '1y':'vs 1Y ago', '6m':'vs 6M ago', ytd:'YTD' };
-  const tLabel = timeLabels[timeRange] || '';
   const legItems = visKeys.map(k => {
     const cur = latPT ? latPT[ptIdxMap2[k]] : null;
     const base = firstPT ? firstPT[ptIdxMap2[k]] : null;
@@ -755,7 +753,7 @@ function renderPriceChart(filterOnly) {
         const pct = ((cur - base) / base * 100);
         const arrow = pct >= 0 ? '▲' : '▼';
         const cls = pct >= 0 ? 'up' : 'dn';
-        deltaHtml = `&nbsp;&nbsp;<span class="${cls}">${arrow}&nbsp;${Math.abs(pct).toFixed(1)}% ${tLabel}</span>`;
+        deltaHtml = `&nbsp;&nbsp;<span class="${cls}">${arrow}&nbsp;${Math.abs(pct).toFixed(1)}%</span>`;
       }
       priceHtml = `<div style="font-size:.75rem;color:var(--text-mid);white-space:nowrap;margin-top:2px">${pStr}${deltaHtml}</div>`;
     }
