@@ -538,9 +538,9 @@ function buildMetrics(absF, ptF, pk) {
 
   function dh(v, pct, points=false) {
     const up=v>0, cl=up?'up':'dn';
-    const txt = points ? Math.abs(v).toFixed(1)+' pts compared to last month'
-              : pct    ? Math.abs(v).toFixed(1)+'% compared to last month'
-                       : Math.abs(v).toLocaleString()+' compared to last month';
+    const txt = points ? Math.abs(v).toFixed(1)+'%'
+              : pct    ? Math.abs(v).toFixed(1)+'%'
+                       : Math.abs(v).toLocaleString();
     return `<div class="mc-delta ${cl}">${up?'▲':'▼'} ${txt}</div>`;
   }
 
@@ -578,6 +578,7 @@ function buildMetrics(absF, ptF, pk) {
         </div>
       </div>
       <div class="gauge-right">
+        <div style="font-size:var(--fs-h2);font-weight:var(--fw-h2);color:var(--text);margin-bottom:.5rem">Absorption Index</div>
         <div class="gauge-legend" style="margin-bottom:.75rem">
           <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
             <div class="gauge-legend-item">
@@ -594,7 +595,6 @@ function buildMetrics(absF, ptF, pk) {
             </div>
           </div>
         </div>
-        <div style="font-size:var(--fs-h2);font-weight:var(--fw-h2);color:var(--text);margin-bottom:.75rem">Absorption Index</div>
         <div style="width:80%">${buildGaugeSVG(absVal)}</div>
         <div class="gauge-readout">
           <div class="gauge-readout-pct">${absVal.toFixed(1)}% Sold</div>
