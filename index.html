@@ -594,7 +594,7 @@ function buildMetrics(absF, ptF, pk) {
         <div style="width:80%">${buildGaugeSVG(absVal)}</div>
         <div class="gauge-readout">
           <div class="gauge-readout-pct">${absVal.toFixed(1)}% Sold</div>
-          <div style="font-size:calc(var(--fs-delta) * 0.75)">${dh(absDelta, false, true)}</div>
+          <div style="font-size:calc(var(--fs-delta) * 0.75)">${dh(absDelta, true)}</div>
         </div>
       </div>
     </div>`;
