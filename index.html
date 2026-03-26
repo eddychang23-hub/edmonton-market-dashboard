@@ -172,6 +172,13 @@ select:focus { border-color: var(--blue); }
         <div class="chart-sub">Track how prices have moved over time for each home type.</div>
       </div>
     </div>
+    <div class="price-stat" style="border-bottom:none;padding-bottom:0;margin-bottom:.75rem">
+      <div>
+        <div class="price-stat-label" id="priceStatLabel">Avg sold price (all)</div>
+        <div class="price-stat-value" id="priceStatValue">—</div>
+        <div class="price-stat-delta" id="priceStatDelta"></div>
+      </div>
+    </div>
     <div class="prop-filters" id="propFilters" style="margin-bottom:.75rem">
       <button class="pb on" data-k="all">All Types</button>
       <button class="pb" data-k="Detached">Detached</button>
@@ -193,13 +200,6 @@ select:focus { border-color: var(--blue); }
           <button class="vtb active" data-v="monthly">Monthly</button>
           <button class="vtb" data-v="annual">Annual</button>
         </div>
-      </div>
-    </div>
-    <div class="price-stat">
-      <div>
-        <div class="price-stat-label" id="priceStatLabel">Avg sold price (all)</div>
-        <div class="price-stat-value" id="priceStatValue">—</div>
-        <div class="price-stat-delta" id="priceStatDelta"></div>
       </div>
     </div>
     <div style="font-size:.7rem;color:var(--text-soft);margin-bottom:.75rem">Data available since January 2020.</div>
