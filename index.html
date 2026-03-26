@@ -801,29 +801,11 @@ function renderPriceChart(filterOnly) {
   });
 }
 
-function render() {
-  _mode = viewMode;
-
+function renderAbsChart() {
   const absSource = region === 'city' ? CITY_ABS : GEA_ABS;
-  const ptSource = region === 'city' ? CITY_PT : GEA_PT;
-
-  _absF = filterByTimeRange(absSource, absTimeRange);
-  _ptF = filterByTimeRange(ptSource);
-
-  let absRows, absLabels;
-  if (_mode === 'annual') {
-    absRows = aggAbs(_absF);
-    _ptRows = aggPT(_ptF);
-    absLabels = absRows.map(r => String(r[1]));
-    _ptLabels = _ptRows.map(r => String(r[1]));
-  } else {
-    absRows = _absF;
-    _ptRows = _ptF;
-    absLabels = absRows.map(r => rowLabel(r));
-    _ptLabels = _ptRows.map(r => rowLabel(r));
-  }
-
-  renderPriceChart();
+  const absFiltered = filterByTimeRange(absSource, absTimeRange);
+  const absRows = absFiltered;
+  const absLabels = absRows.map(r => rowLabel(r));
 
   // Absorption history chart
   const absVals = absRows.map(r => calcAbs(r[3], r[4]));
@@ -912,8 +894,29 @@ function render() {
     }
   });
 
-  // Sales chart
-  const soldVals = absRows.map(r => r[3]);
+}
+
+function renderPriceChartFull() {
+  _mode = viewMode;
+  const absSource = region === 'city' ? CITY_ABS : GEA_ABS;
+  const ptSource = region === 'city' ? CITY_PT : GEA_PT;
+  _absF = filterByTimeRange(absSource, absTimeRange);
+  _ptF = filterByTimeRange(ptSource);
+  _ptRows = _ptF;
+  _ptLabels = _ptRows.map(r => rowLabel(r));
+  renderPriceChart();
+}
+
+function render() {
+  _mode = viewMode;
+  const absSource = region === 'city' ? CITY_ABS : GEA_ABS;
+  const ptSource = region === 'city' ? CITY_PT : GEA_PT;
+  _absF = filterByTimeRange(absSource, absTimeRange);
+  _ptF = filterByTimeRange(ptSource);
+  _ptRows = _ptF;
+  _ptLabels = _ptRows.map(r => rowLabel(r));
+  renderPriceChart();
+  renderAbsChart();
 }
 
 // ── DISMISS TOOLTIPS ON TAP AWAY ─────────────────────────────────────────
@@ -964,7 +967,7 @@ document.getElementById('timeFilters').addEventListener('click', e => {
     timeRange = tb.dataset.t;
     document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.t === timeRange));
     document.getElementById('dataHint').style.display = timeRange === 'max' ? 'none' : '';
-    render();
+    renderPriceChartFull();
     return;
   }
 });
@@ -975,7 +978,7 @@ document.getElementById('absTimeFilters').addEventListener('click', e => {
   if (!btn) return;
   absTimeRange = btn.dataset.t;
   document.querySelectorAll('.atb').forEach(b => b.classList.toggle('on', b.dataset.t === absTimeRange));
-  render();
+  renderAbsChart();
 });
 
 document.getElementById('propFilters').addEventListener('click', e => {
@@ -983,7 +986,7 @@ document.getElementById('propFilters').addEventListener('click', e => {
   if (!btn) return;
   propKey = btn.dataset.k;
   document.querySelectorAll('.pb').forEach(b => b.classList.toggle('on', b.dataset.k === propKey));
-  renderPriceChart(true);
+  renderPriceChartFull();
 });
 
 render();
