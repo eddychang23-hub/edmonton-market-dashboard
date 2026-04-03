@@ -283,7 +283,7 @@ const CITY_ABS = [
   ["April",2025,445000,1845,4044],["May",2025,431000,2065,4843],["June",2025,433000,1974,5032],
   ["July",2025,432000,1941,5323],["August",2025,429000,1647,5318],["September",2025,420000,1456,5298],
   ["October",2025,429000,1437,4978],["November",2025,424000,1163,4451],["December",2025,428000,914,3345],
-  ["January",2026,418000,791,3596],["February",2026,432000,1111,3934]
+  ["January",2026,418000,791,3596],["February",2026,432000,1111,3934],["March",2026,441000,1421,4621]
 ];
 
 const CITY_PT = [
@@ -323,7 +323,7 @@ const CITY_PT = [
   ["July",2025,569000,431000,290000,203000],["August",2025,551000,420000,299000,209000],
   ["September",2025,540000,429000,296000,201000],["October",2025,544000,430000,292000,191000],
   ["November",2025,545000,420000,282000,204000],["December",2025,552000,423000,294000,194000],
-  ["January",2026,542000,408000,295000,215000],["February",2026,562000,448000,294000,207000]
+  ["January",2026,542000,408000,295000,215000],["February",2026,562000,448000,294000,207000],["March",2026,582000,441000,303000,205000]
 ];
 
 const GEA_ABS = [
@@ -351,7 +351,7 @@ const GEA_ABS = [
   ["April",2025,470000,2710,5436],["May",2025,464000,2967,6520],["June",2025,465000,2877,6768],
   ["July",2025,463000,2860,7083],["August",2025,461000,2382,7141],["September",2025,453000,2192,7085],
   ["October",2025,455000,2061,6665],["November",2025,447000,1654,5961],["December",2025,455000,1315,4517],
-  ["January",2026,449000,1151,4901],["February",2026,455000,1606,5463]
+  ["January",2026,449000,1151,4901],["February",2026,455000,1606,5463],["March",2026,471000,2133,6214]
 ];
 
 // GEA property type data — [Month, Year, Detached, SemiDetached, Townhouse, Apartment]
@@ -386,7 +386,13 @@ const GEA_PT = [
   ["July",2024,576000,425000,302000,206000],["August",2024,555000,435000,302000,205000],
   ["September",2024,565000,437000,299000,200000],["October",2024,577000,431000,315000,193000],
   ["November",2024,548000,438000,296000,199000],["December",2024,561000,424000,304000,210000],
-  ["January",2025,583000,444000,316000,209000],["February",2025,571000,442000,308000,214000]
+  ["January",2025,583000,444000,316000,209000],["February",2025,571000,442000,308000,214000],
+  ["March",2025,575000,431000,315000,218000],["April",2025,586000,435000,315000,218000],
+  ["May",2025,580000,440000,307000,214000],["June",2025,574000,440000,310000,215000],
+  ["July",2025,578000,431000,297000,210000],["August",2025,571000,421000,301000,218000],
+  ["September",2025,554000,434000,303000,207000],["October",2025,560000,429000,297000,203000],
+  ["November",2025,554000,424000,290000,205000],["December",2025,567000,422000,297000,194000],
+  ["January",2026,557000,423000,296000,226000],["February",2026,571000,442000,308000,212000],["March",2026,590000,437000,308000,212000]
 ];
 
 const NEW_LISTINGS = [
@@ -408,7 +414,7 @@ const NEW_LISTINGS = [
   ["January",2025,2452],["February",2025,2723],["March",2025,3780],["April",2025,4012],
   ["May",2025,4917],["June",2025,4218],["July",2025,4388],["August",2025,3785],
   ["September",2025,3645],["October",2025,3306],["November",2025,2285],["December",2025,1389],
-  ["January",2026,2518],["February",2026,3020]
+  ["January",2026,2518],["February",2026,3020],["March",2026,3809]
 ];
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
@@ -582,7 +588,7 @@ function buildMetrics(absF, ptF, pk) {
     <div class="gauge-card">
       <div class="gauge-left">
         <div class="gauge-card-title">Market Status</div>
-        <div class="mc-label" style="margin-bottom:0;margin-top:calc(.4rem - .75rem)">As of March 2026</div>
+        <div class="mc-label" style="margin-bottom:0;margin-top:calc(.4rem - .75rem)">As of April 2026</div>
         <div class="gauge-headline" style="color:${mCol};font-size:1.1rem;font-weight:500;margin-top:0;line-height:1.2">Currently a ${mLabel}</div>
         <div style="font-size:.7rem;color:var(--text-soft);margin-top:0">% changes are month over month.</div>
         <div class="gauge-stats" style="display:grid;grid-template-columns:auto auto;gap:.75rem 2.5rem;margin-top:1.5rem;justify-content:start">
