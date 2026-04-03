@@ -417,6 +417,28 @@ const NEW_LISTINGS = [
   ["January",2026,2518],["February",2026,3020],["March",2026,3809]
 ];
 
+const CITY_NEW_LISTINGS = [
+  ["January",2020,1622],["Feb",2020,1795],["March",2020,1938],["April",2020,1366],
+  ["May",2020,2125],["Jun",2020,2603],["July",2020,2331],["August",2020,2128],
+  ["Sept",2020,2183],["October",2020,2059],["November",2020,1418],["December",2020,983],
+  ["January",2021,1718],["Feb",2021,1904],["March",2021,2956],["April",2021,3205],
+  ["May",2021,3173],["Jun",2021,3128],["July",2021,2588],["August",2021,2410],
+  ["Sept",2021,2361],["October",2021,1998],["November",2021,1655],["December",2021,1052],
+  ["January",2022,1681],["Feb",2022,2276],["March",2022,3234],["April",2022,3519],
+  ["May",2022,3585],["Jun",2022,3222],["July",2022,2699],["August",2022,2428],
+  ["Sept",2022,2416],["October",2022,1977],["November",2022,1531],["December",2022,952],
+  ["January",2023,1649],["Feb",2023,1824],["March",2023,2306],["April",2023,2517],
+  ["May",2023,2761],["Jun",2023,2574],["July",2023,2440],["August",2023,2326],
+  ["Sept",2023,2219],["October",2023,1923],["November",2023,1540],["December",2023,1029],
+  ["January",2024,1545],["February",2024,1945],["March",2024,2548],["April",2024,2714],
+  ["May",2024,3047],["June",2024,2647],["July",2024,2703],["August",2024,2508],
+  ["September",2024,2285],["October",2024,2132],["November",2024,1547],["December",2024,995],
+  ["January",2025,1758],["February",2025,1962],["March",2025,2727],["April",2025,2897],
+  ["May",2025,3537],["June",2025,3064],["July",2025,3216],["August",2025,2711],
+  ["September",2025,2660],["October",2025,2415],["November",2025,1669],["December",2025,988],
+  ["January",2026,1799],["February",2026,2189],["March",2026,2714]
+];
+
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 const MSH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -577,8 +599,9 @@ function buildMetrics(absF, ptF, pk) {
 
   const invPct = prev ? ((inv - prev[4]) / prev[4] * 100) : 0;
 
-  // New listings — match by year filter
-  const nlF = NEW_LISTINGS.filter(r => r[1] >= absF[0][1] && r[1] <= absF[absF.length-1][1]);
+  // New listings — use region-specific data
+  const nlSource = region === 'city' ? CITY_NEW_LISTINGS : NEW_LISTINGS;
+  const nlF = nlSource.filter(r => r[1] >= absF[0][1] && r[1] <= absF[absF.length-1][1]);
   const latNL = nlF[nlF.length-1], prevNL = nlF[nlF.length-2];
   const newListings = latNL ? latNL[2] : 0;
   const prevListings = prevNL ? prevNL[2] : newListings;
