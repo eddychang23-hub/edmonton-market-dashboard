@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Conditions</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+:root {
+  --navy: #0e1f3d;
+  --blue: #185FA5;
+  --seller: #b94a2c;
+  --balanced: #c88a00;
+  --buyer: #1a6e3c;
+  --text: #2d2d2d;
+  --text-mid: #555555;
+  --text-soft: #999999;
+  --border: #e2e8f0;
+  --white: #ffffff;
+  --radius: 12px;
+  --fs-h2: 1.15rem; --fw-h2: 700;
+  --fs-body: .95rem; --fw-body: 400;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lato', sans-serif; background: transparent; color: var(--text); }
+
+.chart-card { background: var(--white); border-radius: var(--radius); padding: 1.4rem 1.5rem; }
+.chart-title { font-size: var(--fs-h2); font-weight: var(--fw-h2); color: var(--text); margin-bottom: .75rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 12px; font-size: var(--fs-body); color: var(--text-mid); font-weight: var(--fw-body); }
+.legend > span { display: flex; align-items: center; gap: 5px; }
+.ld { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.chart-wrap { position: relative; width: 100%; }
+</style>
+</head>
+<body>
+
+<div class="chart-card">
+  <div class="chart-title">Market Conditions</div>
+  <div class="legend">
+    <span><span class="ld" style="background:#185FA5"></span>Buyer's market (&lt;14%)</span>
+    <span><span class="ld" style="background:#c88a00"></span>Balanced market (14–21%)</span>
+    <span><span class="ld" style="background:#b94a2c"></span>Seller's market (&gt;21%)</span>
+  </div>
+  <div class="chart-wrap" style="height:260px"><canvas id="absChart"></canvas></div>
+</div>
+
+<script>
+const CITY_ABS = [
+  ["January",2020,349000,580,4491],["February",2020,356000,743,4941],["March",2020,341000,811,5225],
+  ["April",2020,358000,517,5236],["May",2020,357000,779,5623],["June",2020,357000,1370,5864],
+  ["July",2020,365000,1512,5705],["August",2020,371000,1267,5672],["September",2020,376000,1299,5471],
+  ["October",2020,379000,1164,5318],["November",2020,377000,1017,4742],["December",2020,357000,806,3842],
+  ["January",2021,364000,830,3984],["February",2021,373000,1076,4273],["March",2021,391000,1644,4815],
+  ["April",2021,389000,1934,5425],["May",2021,404000,1906,5899],["June",2021,399000,1908,6257],
+  ["July",2021,390000,1537,6295],["August",2021,384000,1430,6059],["September",2021,379000,1315,5849],
+  ["October",2021,380000,1310,5433],["November",2021,385000,1314,4650],["December",2021,380000,968,3550],
+  ["January",2022,376000,992,3731],["February",2022,411000,1681,3800],["March",2022,410000,2383,4199],
+  ["April",2022,412000,2118,5090],["May",2022,407000,1979,6042],["June",2022,402000,1832,6419],
+  ["July",2022,399000,1375,6604],["August",2022,371000,1249,6322],["September",2022,373000,1115,6164],
+  ["October",2022,375000,1053,5617],["November",2022,366000,908,5012],["December",2022,350000,712,3913],
+  ["January",2023,354000,704,3837],["February",2023,349000,909,4134],["March",2023,367000,1266,4528],
+  ["April",2023,386000,1377,5001],["May",2023,395000,1809,5200],["June",2023,389000,1755,5203],
+  ["July",2023,384000,1590,5126],["August",2023,382000,1606,4885],["September",2023,376000,1436,4740],
+  ["October",2023,378000,1300,4428],["November",2023,361000,1191,3882],["December",2023,373000,888,3213],
+  ["January",2024,381000,1058,3089],["February",2024,382000,1405,3252],["March",2024,397000,1737,3679],
+  ["April",2024,411000,2157,3804],["May",2024,417000,2152,4190],["June",2024,413000,1941,4304],
+  ["July",2024,415000,2018,4310],["August",2024,404000,1784,4277],["September",2024,411000,1544,4191],
+  ["October",2024,419000,1745,3765],["November",2024,409000,1372,3317],["December",2024,418000,1059,2552],
+  ["January",2025,421000,1187,2673],["February",2025,422000,1265,3014],["March",2025,440000,1757,3548],
+  ["April",2025,445000,1845,4044],["May",2025,431000,2065,4843],["June",2025,433000,1974,5032],
+  ["July",2025,432000,1941,5323],["August",2025,429000,1647,5318],["September",2025,420000,1456,5298],
+  ["October",2025,429000,1437,4978],["November",2025,424000,1163,4451],["December",2025,428000,914,3345],
+  ["January",2026,418000,791,3596],["February",2026,432000,1111,3934],["March",2026,441000,1421,4621]
+];
+
+const MSH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function getMI(m) {
+  const l = m.toLowerCase();
+  let i = MONTHS.findIndex(x => x.toLowerCase() === l);
+  if (i < 0) i = MONTHS.findIndex(x => x.toLowerCase().startsWith(l.slice(0,3)));
+  return i >= 0 ? i : 0;
+}
+function rowLabel(r) { return MSH[getMI(r[0])] + ' \'' + String(r[1]).slice(2); }
+function calcAbs(solds, inv) { return inv > 0 ? Math.round((solds / inv) * 1000) / 10 : 0; }
+
+const TC = { color: '#999999', font: { family: 'Lato', size: 12, weight: '400' } };
+const GC = { color: 'rgba(0,0,0,0.05)' };
+
+// Use all data (Max timeline)
+const absRows = CITY_ABS;
+const absLabels = absRows.map(r => rowLabel(r));
+const absVals = absRows.map(r => calcAbs(r[3], r[4]));
+const zoneColor = v => v > 21 ? 'rgba(185,74,44,0.85)' : v >= 14 ? 'rgba(180,130,0,0.85)' : 'rgba(24,95,165,0.85)';
+const segColors = absVals.map(v => zoneColor(v));
+
+new Chart(document.getElementById('absChart'), {
+  type: 'line',
+  data: {
+    labels: absLabels,
+    datasets: [{
+      label: '% of homes sold',
+      data: absVals,
+      segment: { borderColor: ctx => zoneColor(ctx.p1.parsed.y) },
+      borderColor: segColors,
+      backgroundColor: 'transparent',
+      fill: false, tension: .35,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      pointBackgroundColor: segColors,
+      pointBorderColor: segColors,
+      pointBorderWidth: 0,
+      borderWidth: 2.5
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: c => {
+            const v = c.parsed.y;
+            const s = v > 21 ? "Seller's market" : v >= 14 ? 'Balanced' : "Buyer's market";
+            return ` ${v.toFixed(1)}% sold — ${s}`;
+          }
+        }
+      },
+      annotation: {
+        clip: false,
+        annotations: {
+          sellerZone: {
+            type: 'box', drawTime: 'beforeDatasetsDraw',
+            yMin: 21, yMax: 70,
+            backgroundColor: 'rgba(239,154,154,0.3)', borderWidth: 0
+          },
+          sellerLine: {
+            type: 'line', drawTime: 'beforeDatasetsDraw',
+            yMin: 21, yMax: 21,
+            borderColor: 'rgba(185,74,44,0.25)', borderWidth: 1
+          },
+          balancedZone: {
+            type: 'box', drawTime: 'beforeDatasetsDraw',
+            yMin: 14, yMax: 21,
+            backgroundColor: 'rgba(255,224,130,0.25)', borderWidth: 0
+          },
+          buyerLine: {
+            type: 'line', drawTime: 'beforeDatasetsDraw',
+            yMin: 14, yMax: 14,
+            borderColor: 'rgba(24,95,165,0.25)', borderWidth: 1
+          },
+          buyerZone: {
+            type: 'box', drawTime: 'beforeDatasetsDraw',
+            yMin: 0, yMax: 14,
+            backgroundColor: 'rgba(144,202,249,0.2)', borderWidth: 0
+          }
+        }
+      }
+    },
+    layout: { padding: { right: 10 } },
+    scales: {
+      x: { ticks: { ...TC, autoSkip: true, maxTicksLimit: 14, maxRotation: 45 }, grid: { display: false } },
+      y: {
+        min: 0, max: 70,
+        ticks: { ...TC, callback: v => v + '%' },
+        grid: { ...GC }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
