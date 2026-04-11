@@ -121,6 +121,21 @@ select:focus { border-color: var(--blue); }
 .snapshot-item-price { font-size: 1.4rem; font-weight: var(--fw-value); color: var(--text); line-height: 1; }
 .snapshot-item-delta { font-size: var(--fs-delta); font-weight: var(--fw-delta); }
 
+/* ── Property type card ── */
+.prop-type-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.prop-col { padding: 0 1.5rem; text-align: center; }
+.prop-col:first-child { padding-left: 0; }
+.prop-col:last-child  { padding-right: 0; }
+.prop-col + .prop-col { border-left: 1px solid var(--border); }
+.prop-type-label { font-size: var(--fs-label); font-weight: var(--fw-label); text-transform: uppercase; letter-spacing: var(--ls-label); margin-bottom: 12px; }
+.prop-price-row { display: flex; align-items: baseline; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.prop-price-main { font-size: var(--fs-value); font-weight: var(--fw-value); color: var(--text); line-height: 1; }
+.prop-price-delta { font-size: var(--fs-delta); }
+.prop-volume { display: inline-flex; align-items: baseline; gap: 5px; }
+.prop-volume-num { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+.prop-volume-label { font-size: .78rem; color: var(--text); text-transform: uppercase; letter-spacing: .05em; }
+.prop-meta-line { font-size: var(--fs-small); color: var(--text); margin-top: 8px; }
+
 /* ── Chart cards ── */
 .chart-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.5rem; margin-bottom: 1.25rem; }
 .chart-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: .4rem; }
@@ -142,6 +157,11 @@ select:focus { border-color: var(--blue); }
 }
 @media (max-width: 768px) {
   .snapshot-grid { grid-template-columns: repeat(3, 1fr); }
+  .prop-type-grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem 0; }
+  .prop-col { padding: 0 1rem; }
+  .prop-col:nth-child(odd)  { padding-left: 0; border-left: none; }
+  .prop-col:nth-child(even) { padding-right: 0; }
+  .prop-col:nth-child(n+3)  { border-top: 1px solid var(--border); padding-top: 1.25rem; }
 }
 @media (max-width: 500px) {
   .gauge-card { flex-direction: column; }
@@ -155,7 +175,7 @@ select:focus { border-color: var(--blue); }
   .stats-row { flex-direction: column; }
   .chart-card { padding: 1rem 0.75rem; }
   .gauge-left { padding: 1rem; }
-  .gauge-left .gauge-stats { grid-template-columns: 1fr 1fr 1fr !important; gap: .5rem !important; }
+  .gauge-left .gauge-stats { grid-template-columns: 1fr 1fr !important; gap: .5rem !important; }
   .gauge-left .gauge-stats .mc-label { white-space: nowrap; font-size: .7rem; }
   .gauge-left .gauge-stats .stat-inline { flex-direction: column; gap: 2px; }
 }
@@ -182,7 +202,7 @@ select:focus { border-color: var(--blue); }
 
   <div id="gauge"></div>
 
-  <div id="priceSnapshot"></div>
+  <div id="mlsSummary"></div>
 
   <div class="chart-card">
     <div class="chart-header">
@@ -614,7 +634,7 @@ function buildMetrics(absF, ptF, pk) {
         <div class="mc-label" style="margin-bottom:0;margin-top:calc(.4rem - .75rem)">As of April 2026</div>
         <div class="gauge-headline" style="color:${mCol};font-size:1.1rem;font-weight:500;margin-top:0;line-height:1.2">Currently a ${mLabel}</div>
         <div style="font-size:.7rem;color:var(--text-soft);margin-top:0">% changes are month over month.</div>
-        <div class="gauge-stats" style="display:grid;grid-template-columns:auto auto;gap:.75rem 2.5rem;margin-top:1.5rem;justify-content:start">
+        <div class="gauge-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem 2.5rem;margin-top:1.5rem">
           <div>
             <div class="mc-label">Homes Sold</div>
             <div class="stat-inline" style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><div class="mc-value" style="font-size:1.6rem">${sold.toLocaleString()}</div>${dh(soldPct, true)}</div>
@@ -626,6 +646,10 @@ function buildMetrics(absF, ptF, pk) {
           <div>
             <div class="mc-label" style="white-space:nowrap">Total Inventory</div>
             <div class="stat-inline" style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><div class="mc-value" style="font-size:1.6rem">${inv.toLocaleString()}</div>${dh(invPct, true)}</div>
+          </div>
+          <div>
+            <div class="mc-label">Avg Sold Price</div>
+            <div class="stat-inline" style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><div class="mc-value" style="font-size:1.6rem">$${Math.round(price/1000)}K</div>${dh(pd, true)}</div>
           </div>
         </div>
       </div>
@@ -655,90 +679,58 @@ function buildMetrics(absF, ptF, pk) {
       </div>
     </div>`;
 
-  // ── Price Snapshot (always month-over-month, all property types) ──
-  const ptSourceAll = region === 'city' ? CITY_PT : GEA_PT;
-  const latSnap = ptSourceAll[ptSourceAll.length - 1];
-  const prevSnap = ptSourceAll.length > 1 ? ptSourceAll[ptSourceAll.length - 2] : null;
-  const snapTypes = [
-    { key: 'Detached', idx: 2, label: 'Detached Homes',
-      icon: `<svg viewBox="0 0 32 32">
-        <path d="M16 4L3 15h4v13h18V15h4L16 4z"/>
-        <rect x="10" y="17" width="4" height="4" rx=".5"/>
-        <rect x="18" y="17" width="4" height="4" rx=".5"/>
-        <path d="M13 23h6v5h-6z"/>
-      </svg>` },
-    { key: 'SemiDetached', idx: 3, label: 'Semi-Detached',
-      icon: `<svg viewBox="0 0 32 32">
-        <path d="M10 7L1 15h3v13h12V15h-1"/>
-        <path d="M22 7l9 8h-3v13H16V15h1"/>
-        <path d="M16 7v21"/>
-        <rect x="5" y="17" width="3.5" height="3.5" rx=".5"/>
-        <rect x="23.5" y="17" width="3.5" height="3.5" rx=".5"/>
-        <path d="M11 23h4v5h-4z"/>
-        <path d="M17 23h4v5h-4z"/>
-      </svg>` },
-    { key: 'Townhouse', idx: 4, label: 'Townhouse',
-      icon: `<svg viewBox="0 0 32 32">
-        <path d="M1 15l7-8 7 8"/>
-        <path d="M10 15l6-8 6 8"/>
-        <path d="M17 15l7-8 7 8"/>
-        <path d="M3 15v13h26V15"/>
-        <path d="M11 7v21"/>
-        <path d="M21 7v21"/>
-        <path d="M5 23h3v5H5z"/>
-        <path d="M13 23h3v5h-3z"/>
-        <path d="M24 23h3v5h-3z"/>
-      </svg>` },
-    { key: 'Apartment', idx: 5, label: 'Apartment',
-      icon: `<svg viewBox="0 0 32 32">
-        <rect x="5" y="3" width="22" height="25" rx="1.5"/>
-        <rect x="9" y="7" width="3.5" height="3" rx=".5"/>
-        <rect x="14.25" y="7" width="3.5" height="3" rx=".5"/>
-        <rect x="19.5" y="7" width="3.5" height="3" rx=".5"/>
-        <rect x="9" y="13" width="3.5" height="3" rx=".5"/>
-        <rect x="14.25" y="13" width="3.5" height="3" rx=".5"/>
-        <rect x="19.5" y="13" width="3.5" height="3" rx=".5"/>
-        <rect x="9" y="19" width="3.5" height="3" rx=".5"/>
-        <rect x="14.25" y="19" width="3.5" height="3" rx=".5"/>
-        <rect x="19.5" y="19" width="3.5" height="3" rx=".5"/>
-        <path d="M14 25h4v3h-4z"/>
-      </svg>` }
+  // ── Sales by Property Type ──
+  const ptSource = region === 'city' ? CITY_PT : GEA_PT;
+  const latPt = ptSource[ptSource.length - 1];
+  const prevPt = ptSource.length > 1 ? ptSource[ptSource.length - 2] : null;
+  const ptTypes = [
+    { label: 'Detached',        idx: 2 },
+    { label: 'Half Duplex',     idx: 3 },
+    { label: 'Townhouse',       idx: 4 },
+    { label: 'Apartment Condo', idx: 5 }
   ];
+  // City-only MLS stats (hardcoded March 2026)
+  const cityMLS = {
+    'Detached':        { count: 735, olPct: 25.7, cdom: 60.3 },
+    'Half Duplex':     { count: 146, olPct: 11.0, cdom: 56.0 },
+    'Townhouse':       { count: 225, olPct: 18.2, cdom: 58.7 },
+    'Apartment Condo': { count: 291, olPct: 9.6,  cdom: 81.1 }
+  };
 
-  function snapDelta(cur, prev) {
-    if (!prev || prev === 0) return '';
-    const pct = ((cur - prev) / prev * 100);
-    const cls = pct >= 0 ? 'up' : 'dn';
-    const arrow = pct >= 0 ? '▲' : '▼';
-    return `<div class="snapshot-item-delta ${cls}">${arrow} ${Math.abs(pct).toFixed(1)}%</div>`;
-  }
-
-  const allPrice = lat[2];
-  const allPrev = prev ? prev[2] : allPrice;
-  const allPct = ((allPrice - allPrev) / allPrev * 100);
-  const allCls = allPct >= 0 ? 'up' : 'dn';
-  const allArrow = allPct >= 0 ? '▲' : '▼';
-
-  const snapItems = snapTypes.map(t => {
-    const cur = latSnap ? latSnap[t.idx] : 0;
-    const prv = prevSnap ? prevSnap[t.idx] : 0;
-    return `<div class="snapshot-item">
-      <div class="snapshot-item-label">${t.label}</div>
-      <div style="display:flex;align-items:baseline;gap:6px"><div class="snapshot-item-price">$${Math.round(cur/1000)}K</div>${snapDelta(cur, prv)}</div>
+  const mlsCols = ptTypes.map(t => {
+    const cur = latPt ? latPt[t.idx] : 0;
+    const prv = prevPt ? prevPt[t.idx] : cur;
+    const pricePct = prv > 0 ? ((cur - prv) / prv * 100) : 0;
+    const priceCls = pricePct >= 0 ? 'up' : 'dn';
+    const priceArrow = pricePct >= 0 ? '▲' : '▼';
+    let extras = '';
+    if (region === 'city' && cityMLS[t.label]) {
+      const d = cityMLS[t.label];
+      extras = `<div class="prop-volume">
+          <span class="prop-volume-num">${d.count}</span>
+          <span class="prop-volume-label">Sold</span>
+        </div>
+        <div class="prop-meta-line">${d.olPct}% Sold Over List</div>
+        <div class="prop-meta-line">CDOM ${d.cdom}</div>`;
+    }
+    return `<div class="prop-col">
+      <div class="prop-type-label">${t.label}</div>
+      <div class="prop-price-row">
+        <span class="prop-price-main">$${Math.round(cur/1000)}K</span>
+        <span class="prop-price-delta ${priceCls}">${priceArrow} ${Math.abs(pricePct).toFixed(1)}%</span>
+      </div>
+      ${extras}
     </div>`;
   }).join('');
 
-  document.getElementById('priceSnapshot').innerHTML = `
+  const ptMonth = latPt ? latPt[0] : '';
+  const ptYear = latPt ? latPt[1] : '';
+  const regionLabel = region === 'city' ? 'City of Edmonton' : 'Greater Edmonton Area';
+  document.getElementById('mlsSummary').innerHTML = `
     <div class="snapshot-card">
       <div class="chart-title">Average Sold Price by Property Type</div>
-      <div style="font-size:.7rem;color:var(--text-soft);margin-top:2px;margin-bottom:12px">% changes are month over month.</div>
-      <div class="snapshot-grid">
-        <div class="snapshot-item">
-          <div class="snapshot-item-label">All Property Types</div>
-          <div style="display:flex;align-items:baseline;gap:6px"><div class="snapshot-item-price">$${Math.round(allPrice/1000)}K</div><div class="snapshot-item-delta ${allCls}">${allArrow} ${Math.abs(allPct).toFixed(1)}%</div></div>
-        </div>
-        ${snapItems}
-      </div>
+      <div style="font-size:.7rem;color:var(--text-soft);margin-top:2px;margin-bottom:12px">${regionLabel} · ${ptMonth} ${ptYear} · % changes are month over month.</div>
+      <div class="prop-type-grid">${mlsCols}</div>
     </div>`;
 
 }
