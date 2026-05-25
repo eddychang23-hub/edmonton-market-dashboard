@@ -689,12 +689,12 @@ function buildMetrics(absF, ptF, pk) {
     { label: 'Townhouse',       idx: 4 },
     { label: 'Apartment Condo', idx: 5 }
   ];
-  // City-only MLS stats (hardcoded March 2026)
+  // City-only MLS stats (hardcoded April 2026)
   const cityMLS = {
-    'Detached':        { count: 735, olPct: 25.7, cdom: 60.3 },
-    'Half Duplex':     { count: 146, olPct: 11.0, cdom: 56.0 },
-    'Townhouse':       { count: 225, olPct: 18.2, cdom: 58.7 },
-    'Apartment Condo': { count: 291, olPct: 9.6,  cdom: 81.1 }
+    'Detached':        { count: 899, olPct: 26.4, cdom: 57.0 },
+    'Half Duplex':     { count: 183, olPct: 14.8, cdom: 55.9 },
+    'Townhouse':       { count: 280, olPct: 15.4, cdom: 59.6 },
+    'Apartment Condo': { count: 316, olPct: 5.1,  cdom: 76.7 }
   };
 
   const mlsCols = ptTypes.map(t => {
